@@ -10,10 +10,10 @@ Technologie
 Baza danych
 
 Tabele:
-uzytkownicy - dane użytkowników (zawodnicy, trenerzy)
-grupy - informacje o grupach sportowych
-zapisy - zapisy zawodników do grup
-treningi - pojedyncze sesje treningowe
-obecnosci - rejestr obecności
-harmonogram - regularne terminy treningów
-kategorie - kategorie sportowe
+- uzytkownicy - dane użytkowników (zawodnicy, trenerzy)
+- grupy - informacje o grupach sportowych
+- zapisy - zapisy zawodników do grup
+- treningi - pojedyncze sesje treningowe
+- obecnosci - rejestr obecności
+- harmonogram - regularne terminy treningów
+- kategorie - kategorie sportowe
