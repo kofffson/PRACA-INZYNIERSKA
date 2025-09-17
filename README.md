@@ -15,3 +15,7 @@ Baza danych:
 - obecnosci - rejestr obecności
 - harmonogram - regularne terminy treningów
 - kategorie - kategorie sportowe
+
+
+https://learn.microsoft.com/pl-pl/aspnet/core/tutorials/first-mvc-app/working-with-sql?view=aspnetcore-9.0&tabs=visual-studio
+https://learn.microsoft.com/pl-pl/aspnet/core/fundamentals/?view=aspnetcore-9.0&tabs=macos
