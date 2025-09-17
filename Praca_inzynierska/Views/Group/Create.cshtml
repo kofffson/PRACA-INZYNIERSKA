@@ -1,0 +1,39 @@
+@model Group
+
+@{
+    ViewData["Title"] = "Nowa grupa";
+}
+
+<h1>Dodaj nową grupę</h1>
+
+<form method="post">
+    <div>
+        <label>Nazwa:</label>
+        <input type="text" name="Nazwa" required />
+    </div>
+    
+    <div>
+        <label>Opis:</label>
+        <textarea name="Opis"></textarea>
+    </div>
+    
+    <div>
+        <label>Maksymalna liczba zawodników:</label>
+        <input type="number" name="MaxZawodnikow" min="1" required />
+    </div>
+    
+    <div>
+        <label>Miejsce:</label>
+        <input type="text" name="Miejsce" />
+    </div>
+    
+    <div>
+        <label>ID trenera:</label>
+        <input type="number" name="TrenerId" required />
+    </div>
+    
+    <div>
+        <button type="submit">Zapisz</button>
+        <a href="/Group">Anuluj</a>
+    </div>
+</form>

@@ -1,0 +1,31 @@
+@model Group
+
+@{
+    ViewData["Title"] = "Szczegóły grupy";
+}
+
+<h1>@Model.Nazwa</h1>
+
+<dl>
+    <dt>ID:</dt>
+    <dd>@Model.Id</dd>
+    
+    <dt>Opis:</dt>
+    <dd>@Model.Opis</dd>
+    
+    <dt>Liczba zawodników:</dt>
+    <dd>@Model.ObecnychZawodnikow / @Model.MaxZawodnikow</dd>
+    
+    <dt>Status:</dt>
+    <dd>@Model.Status</dd>
+    
+    <dt>Miejsce:</dt>
+    <dd>@Model.Miejsce</dd>
+    
+    <dt>Data utworzenia:</dt>
+    <dd>@Model.DataUtworzenia.ToString("dd.MM.yyyy")</dd>
+</dl>
+
+<p>
+    <a href="/Group">Powrót do listy</a>
+</p>
