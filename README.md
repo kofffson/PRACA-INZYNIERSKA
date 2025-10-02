@@ -1,5 +1,8 @@
 SYSTEM DO KOMPLETOWANIE ZAWODNIKÓW DO GIER ZESPOŁOWYCH
 
+Wizualizacja projektu:
+https://www.figma.com/design/EiGkC28ofm0spxVgKMDHxr/Praca-inżynierska?node-id=0-1&p=f&t=mpggqzK64xBMNQ6W-0
+
 Technologie:
 
 - Backend: ASP.NET Core MVC (.NET)
