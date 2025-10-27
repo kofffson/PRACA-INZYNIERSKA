@@ -9,97 +9,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3ad6f4d1-09aa-469e-a6de-b18a9ad2ef56" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Teamownik.Web.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Controllers/GroupController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/GroupController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Controllers/HomeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/HomeController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Controllers/UserController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/UserController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Data/AppDbContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Migrations/20250917195822_FreshStart.Designer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Migrations/20250917195822_FreshStart.Designer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Migrations/20250917195822_FreshStart.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Migrations/20250917195822_FreshStart.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/Attendance.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/Attendance.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/Category.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/Category.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/Enrollment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/Enrollment.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/Group.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/Group.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/Schedule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/Schedule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/Training.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/Training.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Models/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Models/User.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Praca_inzynierska.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Properties/launchSettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/Group/Create.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Group/Create.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/Group/Details.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Group/Details.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/Group/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Group/Index.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/Home/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Home/Index.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/Shared/_Layout.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Shared/_Layout.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/Shared/_Layout.cshtml.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Shared/_Layout.cshtml.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/Views/User/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Views/User/Index.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/teamownik.db" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/teamownik.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/favicon.ico" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.min.css.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.min.css.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation/LICENSE.md" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation/LICENSE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation/dist/additional-methods.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation/dist/additional-methods.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation/dist/additional-methods.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation/dist/additional-methods.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation/dist/jquery.validate.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation/dist/jquery.validate.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery-validation/dist/jquery.validate.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery-validation/dist/jquery.validate.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/LICENSE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/dist/jquery.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/dist/jquery.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/dist/jquery.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/dist/jquery.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/dist/jquery.min.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/dist/jquery.min.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/dist/jquery.slim.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/dist/jquery.slim.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/dist/jquery.slim.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/dist/jquery.slim.min.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Praca_inzynierska/wwwroot/lib/jquery/dist/jquery.slim.min.map" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/wwwroot/lib/jquery/dist/jquery.slim.min.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/AccountController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/ChatController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/GamesController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/GroupsController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Controllers/SettlementsController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Account/Login.cshtml.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Account/Profile.cshtml.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Teamownik.Web/Views/Account/Register.cshtml.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Praca_inzynierska/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Praca_inzynierska/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Teamownik.Web/Controllers/GroupController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Teamownik.Web/Controllers/HomeController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Teamownik.Web/Controllers/UserController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Teamownik.Web/Teamownik.Web.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Teamownik.Web/Teamownik.Web.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,6 +47,7 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Teamownik.Data/Class1.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Teamownik.Web/Program.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Teamownik.Web/appsettings.json" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -191,7 +114,7 @@
       <option name="presentableId" value="Default" />
       <updated>1760028771014</updated>
       <workItem from="1760028772807" duration="1680000" />
-      <workItem from="1760961011201" duration="425000" />
+      <workItem from="1760961011201" duration="1183000" />
     </task>
     <servers />
   </component>
