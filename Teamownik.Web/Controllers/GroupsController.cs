@@ -1,6 +1,6 @@
 ﻿namespace Teamownik.Web.Controllers;
 
-public class HomeController
+public class GroupsController
 {
     
 }
