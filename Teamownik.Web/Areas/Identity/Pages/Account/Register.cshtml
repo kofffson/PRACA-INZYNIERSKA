@@ -1,0 +1,148 @@
+﻿@page
+@model Teamownik.Web.Areas.Identity.Pages.Account.RegisterModel
+
+@{
+    ViewData["Title"] = "Rejestracja";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 40px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #000;
+        }
+        input::placeholder {
+            color: #ccc;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover {
+            background: #333;
+        }
+        .error-message {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="history.back()">←</button>
+        <h1>Utwórz konto</h1>
+        <p class="subtitle">Wypełnij poniższe dane</p>
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="error-message"></div>
+
+            <div class="form-group">
+                <label asp-for="Input.FirstName">Imię</label>
+                <input asp-for="Input.FirstName" type="text" placeholder="Twoje imię" />
+                <span asp-validation-for="Input.FirstName" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.LastName">Nazwisko</label>
+                <input asp-for="Input.LastName" type="text" placeholder="Twoje nazwisko" />
+                <span asp-validation-for="Input.LastName" class="error-message"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Input.Email">E-mail</label>
+                <input asp-for="Input.Email" type="email" placeholder="Twój email" />
+                <span asp-validation-for="Input.Email" class="error-message"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Input.PhoneNumber">Numer telefonu</label>
+                <input asp-for="Input.PhoneNumber" type="tel" placeholder="+48 " />
+                <span asp-validation-for="Input.PhoneNumber" class="error-message"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Input.Password">Hasło</label>
+                <input asp-for="Input.Password" type="password" placeholder="Wpisz hasło" />
+                <span asp-validation-for="Input.Password" class="error-message"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Input.ConfirmPassword">Powtórz hasło</label>
+                <input asp-for="Input.ConfirmPassword" type="password" placeholder="Powtórz hasło" />
+                <span asp-validation-for="Input.ConfirmPassword" class="error-message"></span>
+            </div>
+
+            <button type="submit" class="btn-submit">Zarejestruj</button>
+        </form>
+    </div>
+</body>
+</html>

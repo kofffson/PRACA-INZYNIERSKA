@@ -1,6 +1,744 @@
-﻿namespace Teamownik.Web.Views.Groups;
-
-public class Details_cshtml
-{
-    
+﻿@model Teamownik.Web.Models.GroupDetailsViewModel
+@{
+    ViewData["Title"] = Model.GroupName;
+    Layout = null;
 }
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@Model.GroupName</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 80px;
+            max-width: 430px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .group-header {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .bell-icon {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .group-info-header {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .group-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .group-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 100px;
+            z-index: 999;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 10px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #00bcd4;
+            border-bottom-color: #00bcd4;
+        }
+
+        .tab-content {
+            display: none;
+            min-height: calc(100vh - 200px);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .members-section {
+            padding: 20px;
+        }
+
+        .member-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-radius: 12px;
+            background: #fafafa;
+            margin-bottom: 10px;
+        }
+
+        .member-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-avatar {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .vip-corner-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #ffd700;
+            color: #333;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .member-stats {
+            font-size: 12px;
+            color: #4caf50;
+            font-weight: 600;
+            margin: 2px 0;
+        }
+
+        .member-joined {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .badge-vip {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-member-action {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .btn-vip {
+            background: #ffd700;
+            color: #333;
+        }
+
+        .btn-vip:hover {
+            background: #ffed4a;
+            transform: translateY(-1px);
+        }
+
+        .btn-remove {
+            background: #ff5252;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #ff6b6b;
+            transform: translateY(-1px);
+        }
+
+        .games-section {
+            padding: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #00bcd4;
+        }
+
+        .game-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .game-info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .game-info-row i {
+            width: 18px;
+        }
+
+        .invite-section {
+            padding: 20px;
+        }
+
+        .invite-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .btn-invite {
+            padding: 15px;
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-leave {
+            background: white;
+            color: #ff5252;
+            border: 2px solid #ff5252;
+        }
+
+        .btn-leave:hover {
+            background: #ff5252;
+            color: white;
+        }
+
+        .btn-deactivate {
+            background: #ff5252;
+            color: white;
+        }
+
+        .btn-deactivate:hover {
+            background: #ff6b6b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .group-stats {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00bcd4;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .alert-message {
+            margin: 10px 20px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+            flex: 1;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #00bcd4;
+        }
+
+        .nav-item i {
+            font-size: 24px;
+        }
+
+        .fab-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: black;
+            color: white;
+            border: none;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-top: -28px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="group-header">
+    <div class="header-top">
+        <div class="header-left">
+            <a href="/Groups" class="back-button">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="header-title">Szczegóły grupy</div>
+        </div>
+        <i class="bi bi-bell bell-icon"></i>
+    </div>
+    <div class="group-info-header">
+        <div class="group-name">@Model.GroupName</div>
+        <div class="group-meta">
+            @Model.MemberCount członków • Założyciel: @Model.CreatorName
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+<div class="alert-message alert-success">
+    <i class="bi bi-check-circle-fill"></i>
+    <span>@TempData["Success"]</span>
+</div>
+}
+@if (TempData["Error"] != null)
+{
+<div class="alert-message alert-error">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span>@TempData["Error"]</span>
+</div>
+}
+
+<div class="tab-nav">
+    <button class="tab-button active" data-tab="members">
+        <i class="bi bi-people-fill"></i> Członkowie
+    </button>
+    <button class="tab-button" data-tab="games">
+        <i class="bi bi-calendar-event-fill"></i> Spotkania
+    </button>
+    @if (Model.IsCreator)
+    {
+    <button class="tab-button" data-tab="settings">
+        <i class="bi bi-gear-fill"></i> Więcej
+    </button>
+    }
+</div>
+
+<div class="tab-content active" id="members">
+    <div class="group-stats">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-value">@Model.TotalGamesPlayed</div>
+                <div class="stat-label">Rozegrane gry</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">@Model.TotalGamesOrganized</div>
+                <div class="stat-label">Zorganizowane</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">@Model.VIPCount</div>
+                <div class="stat-label">VIP-owie</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="members-section">
+        @foreach (var member in Model.Members.OrderByDescending(m => m.IsVIP).ThenByDescending(m => m.GamesOrganized).ThenByDescending(m => m.GamesPlayed))
+        {
+        <div class="member-card">
+            <div class="member-left">
+                <div class="member-avatar">
+                    @if (string.IsNullOrEmpty(member.UserName))
+                    {
+                    <i class="bi bi-person-fill"></i>
+                    }
+                    else
+                    {
+                    @member.UserName.Substring(0, 1)
+                    }
+                    @if (member.IsVIP)
+                    {
+                    <div class="vip-corner-badge">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    }
+                </div>
+                <div class="member-info">
+                    <div class="member-name">
+                        @member.UserName
+                        @if (member.IsVIP)
+                        {
+                        <span class="badge-vip">VIP</span>
+                        }
+                    </div>
+                    <div class="member-stats">
+                        @member.StatsSummary
+                    </div>
+                    <div class="member-joined">
+                        Dołączył @member.JoinedAgo
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.IsCreator && member.UserId != Model.CurrentUserId)
+            {
+            <div class="member-actions">
+                <form method="post" asp-controller="Groups" asp-action="ToggleVIP" asp-route-groupId="@Model.GroupId" asp-route-userId="@member.UserId" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-member-action btn-vip">
+                        @(member.IsVIP ? "Usuń VIP" : "Dodaj VIP")
+                    </button>
+                </form>
+                <form method="post" asp-controller="Groups" asp-action="RemoveMember" asp-route-groupId="@Model.GroupId" asp-route-userId="@member.UserId" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-member-action btn-remove" onclick="return confirm('Czy na pewno chcesz usunąć @member.UserName z grupy?')">
+                        Usuń
+                    </button>
+                </form>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
+
+<div class="tab-content" id="games">
+    <div class="games-section">
+        @if (Model.UpcomingGames.Any())
+        {
+        @foreach (var game in Model.UpcomingGames)
+        {
+        <a href="/Games/Details/@game.GameId" class="game-card">
+            <div class="game-title">@game.GameName</div>
+            <div class="game-info">
+                <div class="game-info-row">
+                    <i class="bi bi-person-fill"></i>
+                    <span>@game.Organizer.FullName</span>
+                </div>
+                <div class="game-info-row">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>@game.Location</span>
+                </div>
+                <div class="game-info-row">
+                    <i class="bi bi-calendar-fill"></i>
+                    <span>@game.StartDateTime.ToString("dd.MM.yyyy HH:mm")</span>
+                </div>
+                <div class="game-info-row">
+                    <i class="bi bi-people-fill"></i>
+                    <span>@game.Participants.Count(p => p.Status == "confirmed")/@game.MaxParticipants uczestników</span>
+                </div>
+            </div>
+        </a>
+        }
+        }
+        else
+        {
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h3>Brak nadchodzących spotkań</h3>
+            <p>Bądź pierwszym, który zorganizuje spotkanie dla grupy!</p>
+        </div>
+        }
+    </div>
+</div>
+
+@if (Model.IsCreator)
+{
+<div class="tab-content" id="settings">
+    <div class="invite-section">
+        <h3 style="margin-bottom: 15px;">Zaproś członka</h3>
+        <form method="post" asp-action="Invite" asp-route-groupId="@Model.GroupId" class="invite-form">
+            @Html.AntiForgeryToken()
+            <input type="email" name="email" class="form-input" placeholder="Adres e-mail" required>
+            <button type="submit" class="btn-invite">Wyślij zaproszenie</button>
+        </form>
+    </div>
+    <div class="action-buttons">
+        <form method="post" asp-action="Deactivate" asp-route-id="@Model.GroupId">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-action btn-deactivate" 
+                    onclick="return confirm('Czy na pewno chcesz dezaktywować grupę?')">
+                Dezaktywuj grupę
+            </button>
+        </form>
+    </div>
+</div>
+}
+else
+{
+<div class="action-buttons" style="padding-top: 20px;">
+    <form method="post" asp-action="Leave" asp-route-id="@Model.GroupId">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn-action btn-leave" onclick="return confirm('Czy na pewno chcesz opuścić grupę?')">
+            Opuść grupę
+        </button>
+    </form>
+</div>
+}
+
+<div class="bottom-nav">
+    <a href="/" class="nav-item">
+        <i class="bi bi-house-fill"></i>
+    </a>
+    <a href="/Groups" class="nav-item active">
+        <i class="bi bi-people-fill"></i>
+    </a>
+    <a href="/Games/Create" class="fab-button">+</a>
+    <a href="/Settlements/MyPayments" class="nav-item">
+        <i class="bi bi-credit-card-fill"></i>
+    </a>
+    <a href="/Profile" class="nav-item">
+        <i class="bi bi-three-dots"></i>
+    </a>
+</div>
+
+<script>
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            button.classList.add('active');
+            if (tabName !== 'chat') { 
+                document.getElementById(tabName).classList.add('active');
+            }
+            
+        });
+    });
+
+
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert-message');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-10px)';
+            setTimeout(() => alert.remove(), 300);
+        });
+    }, 5000);
+</script>
+</body>
+</html>

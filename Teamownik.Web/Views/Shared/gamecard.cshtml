@@ -1,0 +1,178 @@
+﻿@model Teamownik.Web.Models.GameCardViewModel
+
+<div class="card h-100 shadow-sm hover-shadow @Model.BorderColorClass">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0 fw-bold">@Model.GameName</h5>
+            <span class="badge @Model.StatusBadgeClass">@Model.StatusBadgeText</span>
+        </div>
+
+        <p class="text-muted small mb-2">
+            <i class="bi bi-person-fill me-1"></i>Organizator: @Model.OrganizerName
+        </p>
+
+        @if (!string.IsNullOrEmpty(Model.GroupName))
+        {
+            <p class="text-primary small mb-2">
+                <i class="bi bi-people-fill me-1"></i>Grupa: @Model.GroupName
+            </p>
+        }
+
+        <p class="card-text mb-2">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+            <strong>@Model.Location</strong>
+        </p>
+
+        <p class="card-text mb-2">
+            <i class="bi bi-clock-fill text-primary me-1"></i>
+            @Model.FormattedDateTime
+        </p>
+
+        <div class="mb-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-people-fill text-success me-2"></i>
+                <div class="progress flex-grow-1" style="height: 20px;">
+                    @{
+                        var percentage = Model.MaxParticipants > 0 
+                            ? (Model.CurrentParticipants * 100.0 / Model.MaxParticipants) 
+                            : 0;
+                        var progressClass = percentage >= 80 ? "bg-success" : 
+                                          percentage >= 50 ? "bg-info" : 
+                                          "bg-warning";
+                    }
+                    <div class="progress-bar @progressClass" 
+                         role="progressbar" 
+                         style="width: @percentage%"
+                         aria-valuenow="@Model.CurrentParticipants" 
+                         aria-valuemin="0" 
+                         aria-valuemax="@Model.MaxParticipants">
+                        @Model.CurrentParticipants/@Model.MaxParticipants
+                    </div>
+                </div>
+            </div>
+            <small class="text-muted">@Model.ParticipantsText</small>
+        </div>
+
+        @if (Model.Cost > 0)
+        {
+            <p class="card-text mb-2">
+                <i class="bi bi-wallet-fill text-warning me-1"></i>
+                <strong>Koszt: @Model.Cost.ToString("C")</strong>
+            </p>
+        }
+        else
+        {
+            <p class="card-text mb-2 text-success">
+                <i class="bi bi-gift-fill me-1"></i>
+                <strong>Darmowe</strong>
+            </p>
+        }
+
+        @if (Model.ShowLowParticipantsWarning)
+        {
+            <div class="alert alert-warning py-1 px-2 mb-2 small">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                Mało zapisanych uczestników
+            </div>
+        }
+
+        @if (Model.IsUserParticipant)
+        {
+            <div class="alert alert-info py-1 px-2 mb-2 small">
+                <i class="bi bi-check-circle-fill me-1"></i>
+                Jesteś zapisany na to spotkanie
+            </div>
+        }
+
+        @if (Model.IsOrganizedByUser)
+        {
+            <div class="alert alert-success py-1 px-2 mb-2 small">
+                <i class="bi bi-star-fill me-1"></i>
+                To Twoje spotkanie
+            </div>
+        }
+
+        <div class="d-grid gap-2">
+            <a asp-controller="Games" asp-action="Details" asp-route-id="@Model.GameId" 
+               class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye-fill me-1"></i>Zobacz szczegóły
+            </a>
+
+            @if (Model.IsOrganizedByUser)
+            {
+                <a asp-controller="Games" asp-action="Manage" asp-route-id="@Model.GameId" 
+                   class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-gear-fill me-1"></i>Zarządzaj
+                </a>
+            }
+            else if (!Model.IsUserParticipant && !Model.IsFull && Model.Status == "open")
+            {
+                <form asp-controller="Games" asp-action="Join" asp-route-id="@Model.GameId" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-success w-100">
+                        <i class="bi bi-plus-circle-fill me-1"></i>Dołącz
+                    </button>
+                </form>
+            }
+            else if (Model.IsUserParticipant)
+            {
+                <form asp-controller="Games" asp-action="Leave" asp-route-id="@Model.GameId" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                        <i class="bi bi-x-circle-fill me-1"></i>Wypisz się
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    @if (Model.IsRecurring)
+    {
+        <div class="card-footer text-muted small">
+            <i class="bi bi-arrow-repeat me-1"></i>
+            Spotkanie cykliczne
+        </div>
+    }
+</div>
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+    }
+
+    .border-primary {
+        border-left: 4px solid #0d6efd !important;
+    }
+
+    .border-success {
+        border-left: 4px solid #198754 !important;
+    }
+
+    .border-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+
+    .border-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+
+    .badge-open {
+        background-color: #198754;
+        color: white;
+    }
+
+    .badge-full {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .badge-closed {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>

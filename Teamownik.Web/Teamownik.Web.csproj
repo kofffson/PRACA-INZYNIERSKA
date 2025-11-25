@@ -9,15 +9,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
+      <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     </ItemGroup>
 
@@ -28,6 +31,35 @@
       <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
       <_ContentIncludedByDefault Remove="Views\Shared\_Layout.cshtml" />
       <_ContentIncludedByDefault Remove="Views\User\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Account\Login.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Account\Logout.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Account\Register.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Account\RegisterConfirmation.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Games\Create.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Games\Details.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Games\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Games\MyGames.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Create.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Details.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Invite.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Settlements\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Settlements\MarkAsPaid.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Settlements\MyPayments.cshtml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Teamownik.Services\Teamownik.Services.csproj" />
+      <ProjectReference Include="..\Teamownik.Data\Teamownik.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Areas\Identity\Pages\Account\Login.cshtml" />
+      <AdditionalFiles Include="Areas\Identity\Pages\Account\Logout.cshtml" />
+      <AdditionalFiles Include="Areas\Identity\Pages\Account\Register.cshtml" />
+      <AdditionalFiles Include="Areas\Identity\Pages\Account\RegisterConfirmation.cshtml" />
+      <AdditionalFiles Include="Areas\Identity\Pages\Account\_ViewImports.cshtml" />
+      <AdditionalFiles Include="Areas\Identity\Pages\_ValidationScriptsPartial.cshtml" />
     </ItemGroup>
 
 </Project>

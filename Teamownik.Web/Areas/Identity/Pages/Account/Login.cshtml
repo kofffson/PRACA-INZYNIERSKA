@@ -1,0 +1,154 @@
+﻿@page
+@model Teamownik.Web.Areas.Identity.Pages.Account.LoginModel
+
+
+@{
+    ViewData["Title"] = "Logowanie";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #999;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #000;
+        }
+        input::placeholder {
+            color: #ccc;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover {
+            background: #333;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .footer a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .error-message {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .show-password {
+            position: relative;
+        }
+        .show-password button {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Logowanie</h1>
+    <p class="subtitle">Witaj!</p>
+
+    <form method="post">
+        <div asp-validation-summary="ModelOnly" class="error-message"></div>
+
+        <div class="form-group">
+            <label asp-for="Input.Email">E-mail</label>
+            <input asp-for="Input.Email" type="email" placeholder="Wpisz e-mail" />
+            <span asp-validation-for="Input.Email" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Input.Password">Hasło</label>
+            <div class="show-password">
+                <input asp-for="Input.Password" type="password" id="password" placeholder="Wpisz hasło" />
+                <button type="button" onclick="togglePassword()">👁</button>
+            </div>
+            <span asp-validation-for="Input.Password" class="error-message"></span>
+        </div>
+
+        <button type="submit" class="btn-submit">Zaloguj się</button>
+
+        <div class="footer">
+            <a asp-page="./Register">Utwórz konto</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function togglePassword() {
+        var input = document.getElementById("password");
+        input.type = input.type === "password" ? "text" : "password";
+    }
+</script>
+</body>
+</html>

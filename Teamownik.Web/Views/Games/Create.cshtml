@@ -1,6 +1,536 @@
-﻿namespace Teamownik.Web.Views.Games;
-
-public class Create_cshtml
-{
-    
+@model Teamownik.Web.Models.CreateGameViewModel
+@{
+ViewData["Title"] = "Nowa Rozgrywka";
+Layout = null;
 }
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 80px;
+            max-width: 430px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .create-header {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .bell-icon {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .form-content {
+            background: white;
+            min-height: calc(100vh - 140px);
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            background: #fafafa;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #00bcd4;
+            background: white;
+        }
+
+        .form-input::placeholder {
+            color: #ccc;
+        }
+
+        .date-input-wrapper {
+            position: relative;
+        }
+
+        .date-input-wrapper i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            pointer-events: none;
+        }
+
+        .toggle-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toggle-input-group .form-input {
+            flex: 1;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #4caf50;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .counter-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 20px;
+            background: #fafafa;
+            border-radius: 25px;
+            border: 1px solid #e0e0e0;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .counter-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: white;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .counter-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .counter-value {
+            font-size: 18px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .toggle-row-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+            flex: 1;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #00bcd4;
+        }
+
+        .nav-item i {
+            font-size: 24px;
+        }
+
+        .fab-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: black;
+            color: white;
+            border: none;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-top: -28px;
+            text-decoration: none;
+        }
+
+        .group-select-wrapper {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .group-select-wrapper.show {
+            display: block;
+        }
+
+        .error-message {
+            color: #ff5252;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div class="create-header">
+    <div class="header-left">
+        <a href="/" class="back-button">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div class="header-title">Nowa Rozgrywka</div>
+    </div>
+    <i class="bi bi-bell bell-icon"></i>
+</div>
+
+<div class="form-content">
+    <form method="post" asp-action="Create" asp-controller="Games" id="createGameForm">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label class="form-label" asp-for="GameName">Nazwa rozgrywki</label>
+            <input type="text"
+                   asp-for="GameName"
+                   class="form-input"
+                   placeholder="np. siatkówka">
+            <span asp-validation-for="GameName" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="GameDate">Data</label>
+            <div class="date-input-wrapper">
+                <input type="date"
+                       asp-for="GameDate"
+                       class="form-input"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                <i class="bi bi-calendar"></i>
+            </div>
+            <span asp-validation-for="GameDate" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="StartTime">Czas rozpoczęcia</label>
+            <div class="date-input-wrapper">
+                <input type="time"
+                       asp-for="StartTime"
+                       class="form-input">
+                <i class="bi bi-clock"></i>
+            </div>
+            <span asp-validation-for="StartTime" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="EndTime">Czas zakończenia</label>
+            <div class="date-input-wrapper">
+                <input type="time"
+                       asp-for="EndTime"
+                       class="form-input">
+                <i class="bi bi-clock"></i>
+            </div>
+            <span asp-validation-for="EndTime" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Location">Miejsce</label>
+            <input type="text"
+                   asp-for="Location"
+                   class="form-input"
+                   placeholder="np. Orlik">
+            <span asp-validation-for="Location" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Kwota</label>
+            <div class="toggle-input-group">
+                <input type="number"
+                       asp-for="Cost"
+                       class="form-input"
+                       placeholder=""
+                       step="0.01"
+                       min="0"
+                       id="costInput"
+                       placeholder="np. 10 zł">
+                <label class="toggle-switch">
+                    <input type="checkbox" asp-for="IsPaid" id="isPaidToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <span asp-validation-for="Cost" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="MaxParticipants">Limit miejsc</label>
+            <div class="counter-controls">
+                <button type="button" class="counter-btn" id="decrementBtn">-</button>
+                <div class="counter-value" id="counterDisplay">0</div>
+                <button type="button" class="counter-btn" id="incrementBtn">+</button>
+            </div>
+            <input type="hidden" asp-for="MaxParticipants" id="maxParticipantsInput" value="10">
+            <span asp-validation-for="MaxParticipants" class="error-message"></span>
+        </div>
+
+        <div class="toggle-row">
+            <label class="toggle-row-label">Opublikuj tylko dla grupy</label>
+            <label class="toggle-switch">
+                <input type="checkbox" asp-for="OnlyForGroup" id="onlyForGroupToggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="group-select-wrapper" id="groupSelectWrapper">
+            <div class="form-group">
+                <label class="form-label">Wybierz grupę</label>
+                <select asp-for="GroupId" class="form-input">
+                    <option value="">Wybierz grupę...</option>
+                    @if (ViewBag.UserGroups != null)
+                    {
+                    @foreach (var group in (IEnumerable<Teamownik.Data.Models.Group>)ViewBag.UserGroups)
+                    {
+                    <option value="@group.GroupId">@group.GroupName</option>
+                    }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="toggle-row">
+            <label class="toggle-row-label">Opublikuj dla wszystkich</label>
+            <label class="toggle-switch">
+                <input type="checkbox" asp-for="IsPublic" id="isPublicToggle" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn-submit">Utwórz</button>
+    </form>
+</div>
+
+<div class="bottom-nav">
+    <a href="/" class="nav-item">
+        <i class="bi bi-house-fill"></i>
+    </a>
+    <a href="/Groups" class="nav-item">
+        <i class="bi bi-people-fill"></i>
+    </a>
+    <a href="/Games/Create" class="fab-button active">+</a>
+    <a href="/Payments" class="nav-item">
+        <i class="bi bi-credit-card-fill"></i>
+    </a>
+    <a href="/Profile" class="nav-item">
+        <i class="bi bi-three-dots"></i>
+    </a>
+</div>
+
+<script>
+    const decrementBtn = document.getElementById('decrementBtn');
+    const incrementBtn = document.getElementById('incrementBtn');
+    const counterDisplay = document.getElementById('counterDisplay');
+    const maxParticipantsInput = document.getElementById('maxParticipantsInput');
+
+    let count = 10;
+
+    decrementBtn.addEventListener('click', function() {
+        if (count > 2) {
+            count--;
+            updateCounter();
+        }
+    });
+
+    incrementBtn.addEventListener('click', function() {
+        if (count < 100) {
+            count++;
+            updateCounter();
+        }
+    });
+
+    function updateCounter() {
+        counterDisplay.textContent = count;
+        maxParticipantsInput.value = count;
+    }
+
+    const isPaidToggle = document.getElementById('isPaidToggle');
+    const costInput = document.getElementById('costInput');
+
+    isPaidToggle.addEventListener('change', function() {
+        if (this.checked) {
+            costInput.disabled = false;
+            costInput.focus();
+        } else {
+            costInput.disabled = true;
+            costInput.value = '0';
+        }
+    });
+
+    if (!isPaidToggle.checked) {
+        costInput.disabled = true;
+    }
+
+    const onlyForGroupToggle = document.getElementById('onlyForGroupToggle');
+    const groupSelectWrapper = document.getElementById('groupSelectWrapper');
+    const isPublicToggle = document.getElementById('isPublicToggle');
+
+    onlyForGroupToggle.addEventListener('change', function() {
+        if (this.checked) {
+            groupSelectWrapper.classList.add('show');
+            isPublicToggle.checked = false;
+        } else {
+            groupSelectWrapper.classList.remove('show');
+        }
+    });
+
+    isPublicToggle.addEventListener('change', function() {
+        if (this.checked) {
+            onlyForGroupToggle.checked = false;
+            groupSelectWrapper.classList.remove('show');
+        }
+    });
+
+    updateHiddenDateTime();
+</script>
+</body>
+</html>

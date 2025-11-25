@@ -1,0 +1,848 @@
+@model Teamownik.Web.Models.HomeViewModel
+@{
+    ViewData["Title"] = "Strona główna";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Teamownik</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 80px;
+            max-width: 430px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .btn-resign-action {
+            background: #ffebee !important;
+            color: #c62828 !important;
+            border: 2px solid #c62828 !important;
+        }
+
+        .btn-resign-action:hover {
+            background: #ffcdd2 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+        }
+        /* Dodaj do sekcji style */
+        .meeting-organizer i {
+            margin-right: 5px;
+        }
+
+        /* Header */
+        .app-header {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .header-title h1 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1.5px;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: #999;
+            margin-top: -2px;
+        }
+
+        .bell-icon {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .alert-message {
+            margin: 10px 20px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 2px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px 10px;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #00bcd4;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            line-height: 1.3;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 15px;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .section-count {
+            color: #666;
+            font-weight: 400;
+        }
+
+        .btn-new {
+            background: black;
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .meetings-container {
+            padding: 0 20px 20px;
+            background: white;
+            margin-bottom: 2px;
+        }
+
+        .meeting-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            border: 2.5px solid transparent;
+        }
+
+        .meeting-card.border-warning {
+            border-color: #ffc107;
+            background: #fffef5;
+        }
+
+        .meeting-card.border-danger {
+            border-color: #ff5252;
+            background: #fff5f5;
+        }
+
+        .meeting-card.border-success {
+            border-color: #4caf50;
+            background: #f5fff6;
+        }
+
+        .meeting-card.border-primary {
+            border-color: #9c27b0;
+            background: #faf5ff;
+        }
+
+        .alert-banner {
+            background: #ffc107;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+        }
+
+        .meeting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .meeting-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+        }
+
+        .meeting-organizer {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .badge-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-full {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-closed {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-open {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-vip {
+            background: #ffd700;
+            color: #333;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .meeting-details {
+            margin: 12px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .detail-row i {
+            width: 20px;
+            color: #666;
+        }
+
+        .meeting-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary-action {
+            background: black;
+            color: white;
+        }
+
+        .btn-outline-action {
+            background: white;
+            color: black;
+            border: 2px solid black;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+            flex: 1;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #00bcd4;
+        }
+
+        .nav-item i {
+            font-size: 24px;
+        }
+
+        .fab-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: black;
+            color: white;
+            border: none;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-top: -28px;
+            text-decoration: none;
+        }
+
+        .content-section {
+            background: white;
+            margin-bottom: 2px;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="header-main">
+            <div class="header-left">
+                <div class="profile-icon">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="header-title">
+                    <h1>TEAMOWNIK</h1>
+                    <div class="header-subtitle">Witaj, @Model.UserFullName</div>
+                </div>
+            </div>
+            <i class="bi bi-bell bell-icon"></i>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-message alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-message alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">@Model.ActiveGroupsCount</div>
+                <div class="stat-label">Aktywne grupy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.UnpaidSettlementsCount</div>
+                <div class="stat-label">Nierozliczone</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.UpcomingGamesCount</div>
+                <div class="stat-label">Nadchodzące<br>spotkania</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalUsersInGroups</div>
+                <div class="stat-label">Użytkownicy</div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.MyOrganizedGames != null && Model.MyOrganizedGames.Any())
+    {
+        <div class="content-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Twoje spotkania <span class="section-count">(@Model.MyOrganizedGames.Count)</span></div>
+                </div>
+                <a href="/Games/Create" class="btn-new">+ Nowe</a>
+            </div>
+
+            <div class="meetings-container">
+                @foreach (var game in Model.MyOrganizedGames)
+                {
+                    <div class="meeting-card @game.BorderColorClass">
+                        <div class="meeting-header">
+                            <div>
+                                <h3 class="meeting-title">@game.GameName</h3>
+                                <div class="meeting-organizer">Organizujesz</div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(game.StatusBadgeText))
+                            {
+                                <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
+                            }
+                        </div>
+                        <div class="meeting-details">
+                            <div class="detail-row">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span>@game.Location</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="bi bi-calendar-fill"></i>
+                                <span>@game.FormattedDateTime</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="bi bi-people-fill"></i>
+                                <span>@game.ParticipantsText</span>
+                            </div>
+                            @if (game.Cost > 0)
+                            {
+                                <div class="detail-row">
+                                    <i class="bi bi-credit-card-fill"></i>
+                                    <span>@game.Cost.ToString("0.00") zł</span>
+                                </div>
+                            }
+                        </div>
+                        <a href="/Games/Manage/@game.GameId" class="btn-action btn-primary-action">Zarządzaj</a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+@if (Model.MyParticipatingGames != null && Model.MyParticipatingGames.Any())
+{
+    <div class="content-section">
+        <div class="meetings-container" style="padding-top: 20px;">
+            @foreach (var game in Model.MyParticipatingGames)
+            {
+                <div class="meeting-card @game.BorderColorClass">
+                    <div class="meeting-header">
+                        <div>
+                            <h3 class="meeting-title">@game.GameName</h3>
+                            <!-- ✅ ULEPSZONE: Użyj nowych właściwości -->
+                            @if (!string.IsNullOrEmpty(game.UserParticipationStatus))
+                            {
+                                <div class="meeting-organizer" style="color: @game.UserParticipationColor;">
+                                    <i class="bi @game.UserParticipationIcon"></i> @game.UserParticipationStatus
+                                </div>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(game.StatusBadgeText))
+                        {
+                            <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
+                        }
+                    </div>
+                    <div class="meeting-details">
+                        <div class="detail-row">
+                            <i class="bi bi-person-fill"></i>
+                            <span>@game.OrganizerName</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>@game.Location</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-calendar-fill"></i>
+                            <span>@game.FormattedDateTime</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-people-fill"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+                        @if (game.Cost > 0)
+                        {
+                            <div class="detail-row">
+                                <i class="bi bi-credit-card-fill"></i>
+                                <span>@game.Cost.ToString("0.00") zł</span>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="meeting-actions">
+                        <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 2;">
+                            Szczegóły
+                        </a>
+                        <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" style="flex: 1;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-action btn-resign-action" style="width: 100%;">
+                                @if (game.IsOnWaitlist)
+                                {
+                                    <text>Zrezygnuj z listy</text>
+                                }
+                                else
+                                {
+                                    <text>Zrezygnuj</text>
+                                }
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (Model.MyGroupGames != null && Model.MyGroupGames.Any())
+{
+    <div class="content-section">
+        <div class="section-header">
+            <div>
+                <div class="section-title">Spotkania Twojej Grupy <span class="section-count">(@Model.MyGroupGames.Count)</span></div>
+                <div class="section-subtitle">Organizowane przez członków z Twojej grupy</div>
+            </div>
+        </div>
+
+        <div class="meetings-container">
+            @foreach (var game in Model.MyGroupGames)
+            {
+                <div class="meeting-card @game.BorderColorClass">
+                    <div class="meeting-header">
+                        <div>
+                            <h3 class="meeting-title">@game.GameName</h3>
+                            <div class="meeting-organizer">
+                                Organizator: @game.OrganizerName
+                                @if (!string.IsNullOrEmpty(game.GroupName))
+                                {
+                                    <span class="badge-vip">⭐ @game.GroupName</span>
+                                }
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(game.StatusBadgeText))
+                        {
+                            <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
+                        }
+                    </div>
+                    <div class="meeting-details">
+                        <div class="detail-row">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>@game.Location</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-calendar-fill"></i>
+                            <span>@game.FormattedDateTime</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-people-fill"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+                        @if (game.Cost > 0)
+                        {
+                            <div class="detail-row">
+                                <i class="bi bi-credit-card-fill"></i>
+                                <span>@game.Cost.ToString("0.00") zł</span>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="meeting-actions">
+                        @if (game.IsUserParticipant)
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 2;">
+                                Szczegóły
+                            </a>
+                            <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" style="flex: 1;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action btn-resign-action" style="width: 100%;">
+                                    Zrezygnuj
+                                </button>
+                            </form>
+                        }
+                        else if (game.IsFull)
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
+                                Szczegóły
+                            </a>
+                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action btn-outline-action" style="width: 100%;">
+                                    Dołącz do listy rezerwowej
+                                </button>
+                            </form>
+                        }
+                        else if (game.IsCancelled)
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="width: 100%;">
+                                Szczegóły
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
+                                Szczegóły
+                            </a>
+                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action btn-primary-action" style="width: 100%;">
+                                    Zapisz się
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+@if (Model.PublicGames != null && Model.PublicGames.Any())
+{
+    <div class="content-section">
+        <div class="section-header">
+            <div>
+                <div class="section-title">Pozostałe dostępne <span class="section-count">(@Model.PublicGames.Count)</span></div>
+                <div class="section-subtitle">Otwarte publicznie w Twojej okolicy</div>
+            </div>
+        </div>
+
+        <div class="meetings-container">
+            @foreach (var game in Model.PublicGames)
+            {
+                <div class="meeting-card @game.BorderColorClass">
+                    <div class="meeting-header">
+                        <div>
+                            <h3 class="meeting-title">@game.GameName</h3>
+                            <div class="meeting-organizer">Organizator: @game.OrganizerName</div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(game.StatusBadgeText))
+                        {
+                            <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
+                        }
+                    </div>
+                    <div class="meeting-details">
+                        <div class="detail-row">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>@game.Location</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-calendar-fill"></i>
+                            <span>@game.FormattedDateTime</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="bi bi-people-fill"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+                        @if (game.Cost > 0)
+                        {
+                            <div class="detail-row">
+                                <i class="bi bi-credit-card-fill"></i>
+                                <span>@game.Cost.ToString("0.00") zł</span>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="meeting-actions">
+                        @if (game.IsUserParticipant)
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 2;">
+                                Szczegóły
+                            </a>
+                            <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" style="flex: 1;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action btn-resign-action" style="width: 100%;">
+                                    Zrezygnuj
+                                </button>
+                            </form>
+                        }
+                        else if (game.IsFull)
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
+                                Szczegóły
+                            </a>
+                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action btn-outline-action" style="width: 100%;">
+                                    Dołącz do listy rezerwowej
+                                </button>
+                            </form>
+                        }
+                        else if (game.IsCancelled)
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="width: 100%;">
+                                Szczegóły
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
+                                Szczegóły
+                            </a>
+                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action btn-primary-action" style="width: 100%;">
+                                    Zapisz się
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+    @if ((Model.MyOrganizedGames == null || !Model.MyOrganizedGames.Any()) && 
+         (Model.MyParticipatingGames == null || !Model.MyParticipatingGames.Any()) && 
+         (Model.MyGroupGames == null || !Model.MyGroupGames.Any()) && 
+         (Model.PublicGames == null || !Model.PublicGames.Any()))
+    {
+        <div class="content-section">
+            <div class="empty-state">
+                <i class="bi bi-calendar-x"></i>
+                <h3>Brak dostępnych spotkań</h3>
+                <p>Stwórz nowe spotkanie lub dołącz do grupy!</p>
+                <a href="/Games/Create" class="btn-new" style="margin-top: 20px;">Utwórz spotkanie</a>
+            </div>
+        </div>
+    }
+
+    <div class="bottom-nav">
+        <a href="/" class="nav-item active">
+            <i class="bi bi-house-fill"></i>
+        </a>
+        <a href="/Groups" class="nav-item">
+            <i class="bi bi-people-fill"></i>
+        </a>
+        <a href="/Games/Create" class="fab-button">+</a>
+        <a href="/Settlements/MyPayments" class="nav-item">
+            <i class="bi bi-credit-card-fill"></i>
+        </a>
+        <a href="/Profile" class="nav-item">
+            <i class="bi bi-three-dots"></i>
+        </a>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-message');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
