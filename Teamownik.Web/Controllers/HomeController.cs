@@ -36,17 +36,11 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-        {
-            return RedirectToPage("/Identity/Account/Login");
-        }
+        var userId = GetUserId();
+        if (userId == null) return RedirectToLogin();
 
         var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            return RedirectToPage("/Identity/Account/Login");
-        }
+        if (user == null) return RedirectToLogin();
 
         var model = new HomeViewModel
         {
@@ -55,7 +49,6 @@ public class HomeController : Controller
         };
 
         await LoadUserStatistics(model, userId);
-
         await LoadUserGames(model, userId);
 
         return View(model);
@@ -65,27 +58,18 @@ public class HomeController : Controller
     {
         try
         {
+            var now = DateTime.UtcNow.AddMinutes(-5);
+            
             var userGroups = await _groupService.GetUserGroupsAsync(userId);
             model.ActiveGroupsCount = userGroups.Count();
 
             model.UnpaidSettlementsCount = await _context.Settlements
-                .Where(s => s.PayerId == userId && !s.IsPaid)
-                .CountAsync();
+                .CountAsync(s => s.PayerId == userId && !s.IsPaid);
 
-            var now = DateTime.UtcNow.AddMinutes(-5); // Tolerancja 5 minut
-            
-            _logger.LogInformation($"[LoadUserStatistics] Czas UTC: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}, Czas z tolerancją: {now:yyyy-MM-dd HH:mm:ss}");
-            
             model.UpcomingGamesCount = await _context.GameParticipants
-                .Where(gp => gp.UserId == userId && gp.Game.StartDateTime > now)
-                .CountAsync();
+                .CountAsync(gp => gp.UserId == userId && gp.Game.StartDateTime > now);
 
-            var groupIds = userGroups.Select(g => g.GroupId).ToList();
-            model.TotalUsersInGroups = await _context.GroupMembers
-                .Where(gm => groupIds.Contains(gm.GroupId))
-                .Select(gm => gm.UserId)
-                .Distinct()
-                .CountAsync();
+            model.TotalUsersInGroups = await _context.Users.CountAsync();
         }
         catch (Exception ex)
         {
@@ -98,112 +82,92 @@ public class HomeController : Controller
     }
 
     private async Task LoadUserGames(HomeViewModel model, string userId)
-{
-    try
     {
-        var now = DateTime.UtcNow.AddMinutes(-5); // Tolerancja 5 minut
-        
-        _logger.LogInformation($"[LoadUserGames] ===== ROZPOCZYNAM ŁADOWANIE GIER =====");
-        _logger.LogInformation($"[LoadUserGames] Użytkownik: {userId}");
-        _logger.LogInformation($"[LoadUserGames] Czas UTC: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
-        _logger.LogInformation($"[LoadUserGames] Czas z tolerancją (-5 min): {now:yyyy-MM-dd HH:mm:ss}");
-
-        var organizedGames = await _gameService.GetGamesByOrganizerAsync(userId);
-        _logger.LogInformation($"[LoadUserGames] Znaleziono {organizedGames.Count()} gier organizowanych (PRZED filtrem)");
-        
-        var upcomingOrganized = organizedGames
-            .Where(g => g.StartDateTime > now && g.Status != "cancelled")
-            .OrderBy(g => g.StartDateTime)
-            .Take(5)
-            .ToList();
-
-        _logger.LogInformation($"[LoadUserGames] Po filtrze: {upcomingOrganized.Count} organizowanych gier");
-        
-        foreach (var game in upcomingOrganized)
+        try
         {
-            _logger.LogInformation($"[LoadUserGames] ✓ Dodaję organizowaną grę: {game.GameName}, Start: {game.StartDateTime:yyyy-MM-dd HH:mm:ss}, Status: {game.Status}");
-            model.MyOrganizedGames.Add(await MapToGameCardViewModel(game, userId));
+            var now = DateTime.UtcNow.AddMinutes(-5);
+
+            // Gry organizowane
+            var organizedGames = await _gameService.GetGamesByOrganizerAsync(userId);
+            var upcomingOrganized = organizedGames
+                .Where(g => g.StartDateTime > now && g.Status != "cancelled")
+                .OrderBy(g => g.StartDateTime)
+                .Take(5);
+
+            foreach (var game in upcomingOrganized)
+            {
+                model.MyOrganizedGames.Add(await MapToGameCardViewModel(game, userId));
+            }
+
+            // Gry uczestnictwa
+            var participatingGames = await _gameService.GetGamesByParticipantAsync(userId);
+            var upcomingParticipating = participatingGames
+                .Where(g => g.OrganizerId != userId && g.StartDateTime > now && g.Status != "cancelled")
+                .OrderBy(g => g.StartDateTime)
+                .Take(5);
+
+            foreach (var game in upcomingParticipating)
+            {
+                model.MyParticipatingGames.Add(await MapToGameCardViewModel(game, userId));
+            }
+
+            // Gry grupowe
+            var userGroups = await _groupService.GetUserGroupsAsync(userId);
+            var groupIds = userGroups.Select(g => g.GroupId).ToList();
+
+            var groupGames = await _context.Games
+                .Include(g => g.Organizer)
+                .Include(g => g.Participants)
+                .Include(g => g.Group)
+                .Where(g => groupIds.Contains(g.GroupId ?? 0) 
+                    && g.StartDateTime > now 
+                    && (g.Status == "open" || g.Status == "full")
+                    && g.OrganizerId != userId
+                    && !g.Participants.Any(p => p.UserId == userId))
+                .OrderBy(g => g.StartDateTime)
+                .Take(5)
+                .ToListAsync();
+
+            foreach (var game in groupGames)
+            {
+                var cardModel = await MapToGameCardViewModel(game, userId);
+                cardModel.IsFromUserGroup = true;
+                model.MyGroupGames.Add(cardModel);
+            }
+
+            // Gry publiczne
+            var publicGames = await _context.Games
+                .Include(g => g.Organizer)
+                .Include(g => g.Participants)
+                .Where(g => g.IsPublic 
+                    && g.StartDateTime > now 
+                    && (g.Status == "open" || g.Status == "full")
+                    && g.OrganizerId != userId
+                    && !groupIds.Contains(g.GroupId ?? 0)
+                    && !g.Participants.Any(p => p.UserId == userId))
+                .OrderBy(g => g.StartDateTime)
+                .Take(3)
+                .ToListAsync();
+
+            foreach (var game in publicGames)
+            {
+                model.PublicGames.Add(await MapToGameCardViewModel(game, userId));
+            }
         }
-
-        var participatingGames = await _gameService.GetGamesByParticipantAsync(userId);
-        _logger.LogInformation($"[LoadUserGames] Znaleziono {participatingGames.Count()} gier uczestnictwa (PRZED filtrem)");
-        
-        var upcomingParticipating = participatingGames
-            .Where(g => g.OrganizerId != userId && g.StartDateTime > now && g.Status != "cancelled")
-            .OrderBy(g => g.StartDateTime)
-            .Take(5)
-            .ToList();
-
-        _logger.LogInformation($"[LoadUserGames] Po filtrze: {upcomingParticipating.Count} gier uczestnictwa");
-        
-        foreach (var game in upcomingParticipating)
+        catch (Exception ex)
         {
-            _logger.LogInformation($"[LoadUserGames] ✓ Dodaję grę uczestnictwa: {game.GameName}, Start: {game.StartDateTime:yyyy-MM-dd HH:mm:ss}");
-            model.MyParticipatingGames.Add(await MapToGameCardViewModel(game, userId));
+            _logger.LogError(ex, "Błąd podczas ładowania gier użytkownika");
         }
-
-        var userGroups = await _groupService.GetUserGroupsAsync(userId);
-        var groupIds = userGroups.Select(g => g.GroupId).ToList();
-
-        var groupGames = await _context.Games
-            .Include(g => g.Organizer)
-            .Include(g => g.Participants)
-            .Include(g => g.Group)
-            .Where(g => groupIds.Contains(g.GroupId ?? 0) 
-                && g.StartDateTime > now 
-                && (g.Status == "open" || g.Status == "full")
-                && g.OrganizerId != userId
-                && !g.Participants.Any(p => p.UserId == userId))
-            .OrderBy(g => g.StartDateTime)
-            .Take(5)
-            .ToListAsync();
-
-        _logger.LogInformation($"[LoadUserGames] Znaleziono {groupGames.Count} gier grupowych");
-
-        foreach (var game in groupGames)
-        {
-            var cardModel = await MapToGameCardViewModel(game, userId);
-            cardModel.IsFromUserGroup = true;
-            model.MyGroupGames.Add(cardModel);
-        }
-
-        var publicGames = await _context.Games
-            .Include(g => g.Organizer)
-            .Include(g => g.Participants)
-            .Where(g => g.IsPublic 
-                && g.StartDateTime > now 
-                && (g.Status == "open" || g.Status == "full")
-                && g.OrganizerId != userId
-                && !groupIds.Contains(g.GroupId ?? 0)
-                && !g.Participants.Any(p => p.UserId == userId))
-            .OrderBy(g => g.StartDateTime)
-            .Take(3)
-            .ToListAsync();
-
-        _logger.LogInformation($"[LoadUserGames] Znaleziono {publicGames.Count} publicznych gier");
-        
-        foreach (var game in publicGames)
-        {
-            model.PublicGames.Add(await MapToGameCardViewModel(game, userId));
-        }
-        
-        _logger.LogInformation($"[LoadUserGames] ===== PODSUMOWANIE =====");
-        _logger.LogInformation($"[LoadUserGames] Organizowane: {model.MyOrganizedGames.Count}");
-        _logger.LogInformation($"[LoadUserGames] Uczestniczące: {model.MyParticipatingGames.Count}");
-        _logger.LogInformation($"[LoadUserGames] Grupowe: {model.MyGroupGames.Count}");
-        _logger.LogInformation($"[LoadUserGames] Publiczne: {model.PublicGames.Count}");
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Błąd podczas ładowania gier użytkownika");
-    }
-}
 
+    // ✅ ZOPTYMALIZOWANE - dane z pamięci zamiast 3 zapytań
     private async Task<GameCardViewModel> MapToGameCardViewModel(Game game, string userId)
     {
-        var confirmedCount = await _gameService.GetConfirmedParticipantsCountAsync(game.GameId);
+        var totalSlotsOccupied = await _gameService.GetTotalSlotsOccupiedAsync(game.GameId);
         var waitlist = await _gameService.GetWaitlistAsync(game.GameId);
-        var isUserParticipant = await _gameService.IsUserParticipantAsync(game.GameId, userId);
+        
+        var participant = game.Participants?.FirstOrDefault(p => p.UserId == userId);
+        var isUserParticipant = participant != null;
 
         return new GameCardViewModel
         {
@@ -214,7 +178,7 @@ public class HomeController : Controller
             StartDateTime = game.StartDateTime,
             EndDateTime = game.EndDateTime,
             Cost = game.Cost,
-            CurrentParticipants = confirmedCount,
+            CurrentParticipants = totalSlotsOccupied,
             MaxParticipants = game.MaxParticipants,
             WaitlistCount = waitlist.Count(),
             Status = game.Status,
@@ -222,15 +186,13 @@ public class HomeController : Controller
             RecurrencePattern = game.RecurrencePattern,
             IsOrganizedByUser = game.OrganizerId == userId,
             IsUserParticipant = isUserParticipant,
+            ParticipantStatus = participant?.Status,
             GroupId = game.GroupId,
             GroupName = game.Group?.GroupName
         };
     }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+    public IActionResult Privacy() => View();
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
@@ -240,4 +202,7 @@ public class HomeController : Controller
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier 
         });
     }
+
+    private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+    private IActionResult RedirectToLogin() => RedirectToPage("/Identity/Account/Login");
 }

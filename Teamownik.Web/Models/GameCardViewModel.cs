@@ -1,4 +1,5 @@
 ﻿using System;
+using Teamownik.Web.Helpers;
 
 namespace Teamownik.Web.Models
 {
@@ -14,12 +15,13 @@ namespace Teamownik.Web.Models
         public int CurrentParticipants { get; set; }
         public int MaxParticipants { get; set; }
         public int WaitlistCount { get; set; }
-        public string Status { get; set; } = string.Empty; 
+        public string Status { get; set; } = string.Empty;
         public bool IsRecurring { get; set; }
         public string? RecurrencePattern { get; set; }
         public bool IsFromUserGroup { get; set; }
         public bool IsOrganizedByUser { get; set; }
         public bool IsUserParticipant { get; set; }
+        public string? ParticipantStatus { get; set; }
         public int? GroupId { get; set; }
         public string? GroupName { get; set; }
         
@@ -27,13 +29,25 @@ namespace Teamownik.Web.Models
         public bool IsFull => CurrentParticipants >= MaxParticipants;
         public bool HasWaitlist => WaitlistCount > 0;
         public bool IsCancelled => Status == "cancelled";
-        public bool CanJoin => !IsCancelled && !IsUserParticipant;
+        
+        public bool IsRegistrationClosed
+        {
+            get
+            {
+                var timeUntilStart = StartDateTime - DateTime.UtcNow;
+                return timeUntilStart.TotalMinutes < 30;
+            }
+        }
+        
+        public bool CanJoin => !IsCancelled && !IsUserParticipant && !IsRegistrationClosed;
         
         public string BorderColorClass
         {
             get
             {
                 if (Status == "cancelled")
+                    return "border-danger";
+                if (IsRegistrationClosed)
                     return "border-danger";
                 if (IsFull)
                     return "border-warning";
@@ -47,6 +61,9 @@ namespace Teamownik.Web.Models
         {
             get
             {
+                if (IsRegistrationClosed)
+                    return "badge-closed";
+                    
                 return Status switch
                 {
                     "full" => "badge-full",
@@ -64,6 +81,8 @@ namespace Teamownik.Web.Models
             {
                 if (Status == "cancelled")
                     return "Odwołane";
+                if (IsRegistrationClosed)
+                    return "Zapisy zamknięte";
                 if (IsFull)
                     return "Pełne";
                 if (Status == "closed")
@@ -83,11 +102,13 @@ namespace Teamownik.Web.Models
                 return CurrentParticipants < threshold && Status == "open";
             }
         }
-        
         public string FormattedDateTime
         {
             get
             {
+                var localStart = TimeZoneHelper.ToLocalTime(StartDateTime);
+                var localEnd = TimeZoneHelper.ToLocalTime(EndDateTime);
+                
                 if (IsRecurring && !string.IsNullOrEmpty(RecurrencePattern))
                 {
                     var pattern = RecurrencePattern switch
@@ -98,9 +119,9 @@ namespace Teamownik.Web.Models
                         "monthly" => "Co miesiąc",
                         _ => ""
                     };
-                    return $"{pattern} • {StartDateTime:HH:mm}-{EndDateTime:HH:mm}";
+                    return $"{pattern} • {localStart:HH:mm}-{localEnd:HH:mm}";
                 }
-                return $"{StartDateTime:dd.MM.yyyy} • {StartDateTime:HH:mm}-{EndDateTime:HH:mm}";
+                return $"{localStart:dd.MM.yyyy} • {localStart:HH:mm}-{localEnd:HH:mm}";
             }
         }
         
@@ -115,14 +136,14 @@ namespace Teamownik.Web.Models
             }
         }
         
-        public bool IsOnWaitlist => Status == "reserve" || (IsFull && IsUserParticipant);
+        public bool IsOnWaitlist => ParticipantStatus == "reserve";
         
         public string UserParticipationStatus 
         {
             get
             {
                 if (IsOnWaitlist)
-                    return "Jesteś na liście rezerwowej";
+                    return "Lista rezerwowa";
                 else if (IsUserParticipant)
                     return "Uczestniczysz";
                 else
@@ -150,7 +171,7 @@ namespace Teamownik.Web.Models
                 if (IsOnWaitlist)
                     return "#ff9800";
                 else if (IsUserParticipant)
-                    return "#4caf50"; 
+                    return "#4caf50";
                 else
                     return "#666"; 
             }

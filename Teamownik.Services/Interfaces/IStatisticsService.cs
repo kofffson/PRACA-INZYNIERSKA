@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Teamownik.Services.Interfaces
+﻿namespace Teamownik.Services.Interfaces
 {
     public interface IStatisticsService
     {

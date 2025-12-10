@@ -4,6 +4,8 @@ using System.Security.Claims;
 using Teamownik.Data.Models;
 using Teamownik.Services.Interfaces;
 using Teamownik.Web.Models;
+using Teamownik.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Teamownik.Web.Controllers;
 
@@ -12,24 +14,24 @@ public class GroupsController : Controller
 {
     private readonly ILogger<GroupsController> _logger;
     private readonly IGroupService _groupService;
+    private readonly TeamownikDbContext _context;
 
     public GroupsController(
         ILogger<GroupsController> logger,
-        IGroupService groupService)
+        IGroupService groupService,
+        TeamownikDbContext context)
     {
         _logger = logger;
         _groupService = groupService;
+        _context = context;
     }
 
     public async Task<IActionResult> Index()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToPage("/Identity/Account/Login");
-            }
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
 
             var userGroups = await _groupService.GetUserGroupsAsync(userId);
             
@@ -61,13 +63,11 @@ public class GroupsController : Controller
         try
         {
             var group = await _groupService.GetGroupByIdAsync(id);
-            if (group == null)
-            {
-                return NotFound();
-            }
+            if (group == null) return NotFound();
 
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = GetUserId();
             var members = await _groupService.GetGroupMembersAsync(id);
+            var recentMessages = await _groupService.GetGroupMessagesAsync(id, count: 50);
 
             var viewModel = new GroupDetailsViewModel
             {
@@ -87,7 +87,8 @@ public class GroupsController : Controller
                     GamesPlayed = m.GamesPlayed,
                     GamesOrganized = m.GamesOrganized,
                     CanToggleVIP = group.CreatedBy == currentUserId && m.UserId != currentUserId
-                }).ToList()
+                }).ToList(),
+                RecentMessages = recentMessages.ToList() 
             };
 
             return View(viewModel);
@@ -100,10 +101,7 @@ public class GroupsController : Controller
         }
     }
 
-    public IActionResult Create()
-    {
-        return View();
-    }
+    public IActionResult Create() => View();
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -111,15 +109,18 @@ public class GroupsController : Controller
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
+            
+            var groupExists = await _context.Groups
+                .AnyAsync(g => g.GroupName.ToLower() == model.GroupName.ToLower() && g.IsActive);
+
+            if (groupExists)
             {
-                return RedirectToPage("/Identity/Account/Login");
+                ModelState.AddModelError("GroupName", "Grupa o tej nazwie już istnieje. Wybierz inną nazwę.");
+                return View(model);
             }
 
             var group = new Group
@@ -138,66 +139,46 @@ public class GroupsController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Błąd podczas tworzenia grupy");
-            ModelState.AddModelError("", $"Wystąpił błąd podczas tworzenia grupy: {ex.Message}");
+            ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia grupy.");
             return View(model);
         }
     }
 
     [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Deactivate(int id)
-{
-    try
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Deactivate(int id)
     {
-        _logger.LogInformation($"=== DEZAKTYWACJA - KROK 1: Sprawdzanie użytkownika ===");
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        _logger.LogInformation($"Użytkownik: {userId}");
-        
-        _logger.LogInformation($"=== DEZAKTYWACJA - KROK 2: Pobieranie grupy ID: {id} ===");
-        var group = await _groupService.GetGroupByIdAsync(id);
-        
-        if (group == null)
+        try
         {
-            _logger.LogWarning($"Grupa ID: {id} nie znaleziona");
-            TempData["Error"] = "Grupa nie została znaleziona";
-            return RedirectToAction(nameof(Index));
-        }
-        
-        _logger.LogInformation($"Znaleziono grupę: {group.GroupName}, Twórca: {group.CreatedBy}");
-        
-        _logger.LogInformation($"=== DEZAKTYWACJA - KROK 3: Sprawdzanie uprawnień ===");
-        if (group.CreatedBy != userId)
-        {
-            _logger.LogWarning($"Brak uprawnień: Użytkownik {userId} nie jest twórcą grupy");
-            TempData["Error"] = "Nie masz uprawnień do dezaktywacji tej grupy";
-            return RedirectToAction(nameof(Index));
-        }
+            var userId = GetUserId();
+            var group = await _groupService.GetGroupByIdAsync(id);
+            
+            if (group == null)
+            {
+                TempData["Error"] = "Grupa nie została znaleziona";
+                return RedirectToAction(nameof(Index));
+            }
+            
+            if (group.CreatedBy != userId)
+            {
+                TempData["Error"] = "Nie masz uprawnień do dezaktywacji tej grupy";
+                return RedirectToAction(nameof(Index));
+            }
 
-        _logger.LogInformation($"=== DEZAKTYWACJA - KROK 4: Wywołanie Service ===");
-        var result = await _groupService.DeactivateGroupAsync(id);
-        
-        _logger.LogInformation($"=== DEZAKTYWACJA - KROK 5: Wynik Service: {result} ===");
-        
-        if (result)
-        {
-            TempData["Success"] = "Grupa została dezaktywowana";
-            _logger.LogInformation($"=== GRUPA ID: {id} POMYŚLNIE DEZAKTYWOWANA ===");
+            var result = await _groupService.DeactivateGroupAsync(id);
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Grupa została dezaktywowana" 
+                : "Nie udało się dezaktywować grupy";
+            
+            return RedirectToAction(nameof(Index));
         }
-        else
+        catch (Exception ex)
         {
-            TempData["Error"] = "Nie udało się dezaktywować grupy (Service zwrócił false)";
-            _logger.LogWarning($"=== SERVICE ZWRÓCIŁ FALSE DLA GRUPY ID: {id} ===");
+            _logger.LogError(ex, "Błąd podczas dezaktywacji grupy ID: {GroupId}", id);
+            TempData["Error"] = "Wystąpił błąd podczas dezaktywacji grupy";
+            return RedirectToAction(nameof(Index));
         }
-        
-        return RedirectToAction(nameof(Index));
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, $"BŁĄD podczas dezaktywacji grupy ID: {id}");
-        TempData["Error"] = $"Wystąpił błąd podczas dezaktywacji grupy: {ex.Message}";
-        return RedirectToAction(nameof(Index));
-    }
-}
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -205,29 +186,16 @@ public async Task<IActionResult> Deactivate(int id)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             var group = await _groupService.GetGroupByIdAsync(id);
             
-            if (group == null)
-            {
-                return NotFound();
-            }
-            
-            if (group.CreatedBy != userId)
-            {
-                return Forbid();
-            }
+            if (group == null) return NotFound();
+            if (group.CreatedBy != userId) return Forbid();
 
             var result = await _groupService.DeleteGroupAsync(id);
-            
-            if (result)
-            {
-                TempData["Success"] = "Grupa została usunięta";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się usunąć grupy";
-            }
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Grupa została usunięta" 
+                : "Nie udało się usunąć grupy";
             
             return RedirectToAction(nameof(Index));
         }
@@ -245,17 +213,12 @@ public async Task<IActionResult> Deactivate(int id)
     {
         try
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = GetUserId();
             var result = await _groupService.ToggleVIPStatusAsync(groupId, userId, currentUserId);
             
-            if (result)
-            {
-                TempData["Success"] = "Status VIP został zmieniony";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się zmienić statusu VIP";
-            }
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Status VIP został zmieniony" 
+                : "Nie udało się zmienić statusu VIP";
             
             return RedirectToAction(nameof(Details), new { id = groupId });
         }
@@ -266,43 +229,78 @@ public async Task<IActionResult> Deactivate(int id)
             return RedirectToAction(nameof(Details), new { id = groupId });
         }
     }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddMemberByUsername(int groupId, string username)
+    {
+        try
+        {
+            var currentUserId = GetUserId();
+            var group = await _groupService.GetGroupByIdAsync(groupId);
+        
+            if (group == null || group.CreatedBy != currentUserId)
+            {
+                TempData["Error"] = "Nie masz uprawnień do zarządzania tą grupą";
+                return RedirectToAction(nameof(Details), new { id = groupId });
+            }
+
+            var userToAdd = await _context.Users.FirstOrDefaultAsync(u => u.Email == username);
+        
+            if (userToAdd == null)
+            {
+                TempData["Error"] = $"Nie znaleziono użytkownika: {username}";
+                return RedirectToAction(nameof(Details), new { id = groupId });
+            }
+
+            if (await _groupService.IsUserMemberAsync(groupId, userToAdd.Id))
+            {
+                TempData["Error"] = "Ten użytkownik już jest członkiem grupy";
+                return RedirectToAction(nameof(Details), new { id = groupId });
+            }
+
+            var result = await _groupService.AddMemberAsync(groupId, userToAdd.Id, isVIP: false);
+            TempData[result ? "Success" : "Error"] = result 
+                ? $"Użytkownik {userToAdd.FullName} został dodany do grupy!" 
+                : "Nie udało się dodać użytkownika";
+        
+            return RedirectToAction("Details", new { id = groupId, activeTab = "settings" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas dodawania członka do grupy");
+            TempData["Error"] = "Wystąpił błąd podczas dodawania członka";
+            return RedirectToAction("Details", new { id = groupId, activeTab = "settings" });
+        }
+    }
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveMember(int groupId, string userId)
     {
         try
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = GetUserId();
             var group = await _groupService.GetGroupByIdAsync(groupId);
         
-            if (group == null)
-            {
-                return NotFound();
-            }
-        
-            if (group.CreatedBy != currentUserId || userId == currentUserId)
-            {
-                return Forbid();
-            }
+            if (group == null) return NotFound();
+            if (group.CreatedBy != currentUserId || userId == currentUserId) return Forbid();
 
             var result = await _groupService.RemoveMemberAsync(groupId, userId);
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Członek został usunięty z grupy" 
+                : "Nie udało się usunąć członka z grupy";
         
-            if (result)
-            {
-                TempData["Success"] = "Członek został usunięty z grupy";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się usunąć członka z grupy";
-            }
-        
-            return RedirectToAction(nameof(Details), new { id = groupId });
+            return RedirectToAction("Details", new { id = groupId, activeTab = "members" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Błąd podczas usuwania członka z grupy");
             TempData["Error"] = "Wystąpił błąd podczas usuwania członka z grupy";
-            return RedirectToAction(nameof(Details), new { id = groupId });
+            return RedirectToAction("Details", new { id = groupId, activeTab = "members" });
         }
     }
+
+    private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+    private IActionResult RedirectToLogin() => RedirectToPage("/Identity/Account/Login");
 }

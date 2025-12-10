@@ -2,9 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Teamownik.Data;
 using Teamownik.Services.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Teamownik.Services.Implementation
 {
@@ -19,33 +16,43 @@ namespace Teamownik.Services.Implementation
             _logger = logger;
         }
 
+        // ✅ ZOPTYMALIZOWANE - N+1 problem wyeliminowany
         public async Task UpdateUserStatisticsAsync(string userId)
         {
             try
             {
-                var gamesOrganized = await _context.Games
-                    .Where(g => g.OrganizerId == userId && g.StartDateTime < DateTime.UtcNow && g.Status != "cancelled")
-                    .CountAsync();
+                var now = DateTime.UtcNow;
 
-                var gamesPlayed = await _context.GameParticipants
-                    .Where(gp => gp.UserId == userId && 
-                               gp.Game.StartDateTime < DateTime.UtcNow && 
-                               gp.Game.Status != "cancelled" &&
-                               gp.Status == "confirmed")
-                    .CountAsync();
-
-                var groupMemberships = await _context.GroupMembers
+                // Pobierz wszystko w jednym zapytaniu
+                var stats = await _context.GroupMembers
                     .Where(gm => gm.UserId == userId)
+                    .Select(gm => new
+                    {
+                        Member = gm,
+                        GamesOrganized = _context.Games
+                            .Count(g => g.OrganizerId == userId && 
+                                       g.StartDateTime < now && 
+                                       g.Status != "cancelled"),
+                        GamesPlayed = _context.GameParticipants
+                            .Count(gp => gp.UserId == userId && 
+                                        gp.Game.StartDateTime < now && 
+                                        gp.Game.Status != "cancelled" &&
+                                        gp.Status == "confirmed")
+                    })
                     .ToListAsync();
 
-                foreach (var membership in groupMemberships)
+                foreach (var stat in stats)
                 {
-                    membership.GamesPlayed = gamesPlayed;
-                    membership.GamesOrganized = gamesOrganized;
+                    stat.Member.GamesPlayed = stat.GamesPlayed;
+                    stat.Member.GamesOrganized = stat.GamesOrganized;
 
-                    if (await ShouldPromoteToVIPAsync(userId, membership.GroupId))
+                    // Sprawdź promocję VIP bez dodatkowego zapytania
+                    var membershipDuration = (now - stat.Member.JoinedAt).TotalDays;
+                    if (!stat.Member.IsVIP && 
+                        (stat.GamesPlayed >= 10 || stat.GamesOrganized >= 5) && 
+                        membershipDuration >= 30)
                     {
-                        await PromoteToVIPAsync(userId, membership.GroupId);
+                        stat.Member.IsVIP = true;
                     }
                 }
 
@@ -57,9 +64,11 @@ namespace Teamownik.Services.Implementation
             }
         }
 
+        // ✅ ZOPTYMALIZOWANE - jedno zapytanie
         public async Task<bool> ShouldPromoteToVIPAsync(string userId, int groupId)
         {
             var member = await _context.GroupMembers
+                .AsNoTracking()
                 .FirstOrDefaultAsync(gm => gm.UserId == userId && gm.GroupId == groupId);
 
             if (member == null || member.IsVIP) return false;
@@ -82,19 +91,21 @@ namespace Teamownik.Services.Implementation
 
         public async Task<int> GetGamesPlayedCountAsync(string userId)
         {
+            var now = DateTime.UtcNow;
             return await _context.GameParticipants
-                .Where(gp => gp.UserId == userId && 
-                           gp.Game.StartDateTime < DateTime.UtcNow && 
+                .CountAsync(gp => gp.UserId == userId && 
+                           gp.Game.StartDateTime < now && 
                            gp.Game.Status != "cancelled" &&
-                           gp.Status == "confirmed")
-                .CountAsync();
+                           gp.Status == "confirmed");
         }
 
         public async Task<int> GetGamesOrganizedCountAsync(string userId)
         {
+            var now = DateTime.UtcNow;
             return await _context.Games
-                .Where(g => g.OrganizerId == userId && g.StartDateTime < DateTime.UtcNow && g.Status != "cancelled")
-                .CountAsync();
+                .CountAsync(g => g.OrganizerId == userId && 
+                           g.StartDateTime < now && 
+                           g.Status != "cancelled");
         }
     }
 }

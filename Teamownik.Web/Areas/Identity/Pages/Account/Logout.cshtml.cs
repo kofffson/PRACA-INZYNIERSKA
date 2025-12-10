@@ -22,15 +22,12 @@ namespace Teamownik.Web.Areas.Identity.Pages.Account
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
-            
-            // Przekieruj bezpośrednio na stronę logowania
-            return RedirectToPage("./Login");
+            return Page();
         }
 
-        // GET nie jest potrzebny - jeśli ktoś wejdzie na /Logout przez GET, przekieruj na Login
         public IActionResult OnGet()
         {
-            return RedirectToPage("./Login");
+            return Page();
         }
     }
 }

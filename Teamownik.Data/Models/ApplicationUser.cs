@@ -14,7 +14,6 @@ public class ApplicationUser : IdentityUser
     public ICollection<GameParticipant> GameParticipations { get; set; } = new List<GameParticipant>();
     public ICollection<Settlement> PaymentsToMake { get; set; } = new List<Settlement>();
     public ICollection<Settlement> PaymentsToReceive { get; set; } = new List<Settlement>();
-    public ICollection<GroupInvitation> SentInvitations { get; set; } = new List<GroupInvitation>();
     public ICollection<GroupMessage> Messages { get; set; } = new List<GroupMessage>();
     
     public string FullName => $"{FirstName} {LastName}";

@@ -6,6 +6,8 @@ using Teamownik.Data;
 using Teamownik.Data.Models;
 using Teamownik.Services.Implementation;
 using Teamownik.Services.Interfaces;
+using Teamownik.Web.Hubs;
+using Teamownik.Services.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,10 +37,12 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
+builder.Services.AddSignalR();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<ISettlementService, SettlementService>();
+builder.Services.AddHostedService<GameCleanupHostedService>();
 builder.Services.AddMemoryCache();
 
 
@@ -82,12 +86,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<GroupChatHub>("/chathub");
 
 app.MapControllerRoute(
     name: "default",

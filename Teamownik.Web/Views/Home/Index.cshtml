@@ -1,848 +1,621 @@
 @model Teamownik.Web.Models.HomeViewModel
 @{
-    ViewData["Title"] = "Strona główna";
-    Layout = null;
+ViewData["Title"] = "Strona główna";
+Layout = null;
 }
 
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" data-bs-theme="light">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Teamownik</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teamownik - Strona główna</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        <style>
+         .card-organized {
+             border-left: 4px solid #198754 !important;
+         }
+        .card-participating {
+            border-left: 4px solid #0dcaf0 !important;
+        }
+        .card-waitlist {
+            border-left: 4px solid #ffc107 !important;
+            background-color: #fffbeb !important;
+        }
+        .card-full {
+            border-left: 4px solid #dc3545 !important;
+        }
+        .card-group {
+            border-left: 4px solid #0d6efd !important;
+        }
+        .card-public {
+            border-left: 4px solid #6c757d !important;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #f5f5f5;
-            padding-bottom: 80px;
-            max-width: 430px;
-            margin: 0 auto;
-            position: relative;
-        }
-        .btn-resign-action {
-            background: #ffebee !important;
-            color: #c62828 !important;
-            border: 2px solid #c62828 !important;
+        /* ✨ NOWE STYLE DLA LEPSZYCH ALERTÓW ✨ */
+        .custom-alert {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 500px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
 
-        .btn-resign-action:hover {
-            background: #ffcdd2 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
-        }
-        /* Dodaj do sekcji style */
-        .meeting-organizer i {
-            margin-right: 5px;
-        }
-
-        /* Header */
-        .app-header {
-            background: white;
-            padding: 15px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .header-main {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .profile-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-        }
-
-        .header-title h1 {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: 1.5px;
-        }
-
-        .header-subtitle {
-            font-size: 11px;
-            color: #999;
-            margin-top: -2px;
-        }
-
-        .bell-icon {
-            font-size: 24px;
-            color: #333;
-        }
-
-        .alert-message {
-            margin: 10px 20px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            animation: slideDown 0.3s ease;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        @@keyframes slideDown {
+        @@keyframes slideIn {
             from {
+                transform: translateX(100%);
                 opacity: 0;
-                transform: translateY(-10px);
             }
             to {
+                transform: translateX(0);
                 opacity: 1;
-                transform: translateY(0);
             }
         }
 
-        .stats-section {
-            background: white;
-            padding: 20px;
-            margin-bottom: 2px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 20px 10px;
-            border-radius: 12px;
-            background: #fafafa;
-        }
-
-        .stat-number {
-            font-size: 48px;
-            font-weight: 700;
-            color: #00bcd4;
-            margin-bottom: 5px;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #999;
-            line-height: 1.3;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 20px 15px;
-            background: white;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .section-count {
-            color: #666;
-            font-weight: 400;
-        }
-
-        .btn-new {
-            background: black;
-            color: white;
-            border: none;
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .meetings-container {
-            padding: 0 20px 20px;
-            background: white;
-            margin-bottom: 2px;
-        }
-
-        .meeting-card {
-            background: white;
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            position: relative;
-            border: 2.5px solid transparent;
-        }
-
-        .meeting-card.border-warning {
-            border-color: #ffc107;
-            background: #fffef5;
-        }
-
-        .meeting-card.border-danger {
-            border-color: #ff5252;
-            background: #fff5f5;
-        }
-
-        .meeting-card.border-success {
-            border-color: #4caf50;
-            background: #f5fff6;
-        }
-
-        .meeting-card.border-primary {
-            border-color: #9c27b0;
-            background: #faf5ff;
-        }
-
-        .alert-banner {
-            background: #ffc107;
-            color: #333;
-            padding: 10px 15px;
-            border-radius: 20px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .alert-icon {
-            font-size: 20px;
-        }
-
-        .meeting-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .meeting-title {
-            font-size: 15px;
-            font-weight: 700;
-            margin: 0 0 4px 0;
-        }
-
-        .meeting-organizer {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .badge-status {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .badge-full {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-closed {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .badge-open {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .badge-vip {
-            background: #ffd700;
-            color: #333;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            display: inline-block;
-            margin-left: 8px;
-        }
-
-        .meeting-details {
-            margin: 12px 0;
-        }
-
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #333;
-        }
-
-        .detail-row i {
-            width: 20px;
-            color: #666;
-        }
-
-        .meeting-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .btn-action {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary-action {
-            background: black;
-            color: white;
-        }
-
-        .btn-outline-action {
-            background: white;
-            color: black;
-            border: 2px solid black;
-        }
-
-        .btn-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 430px;
-            margin: 0 auto;
-            background: white;
-            padding: 12px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: #999;
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s;
-            flex: 1;
-            text-decoration: none;
-        }
-
-        .nav-item.active {
-            color: #00bcd4;
-        }
-
-        .nav-item i {
-            font-size: 24px;
-        }
-
-        .fab-button {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: black;
-            color: white;
-            border: none;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            margin-top: -28px;
-            text-decoration: none;
-        }
-
-        .content-section {
-            background: white;
-            margin-bottom: 2px;
-        }
-
-        .section-subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-top: 2px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-            display: block;
-            opacity: 0.5;
+        .custom-alert .btn-close {
+            padding: 0.5rem;
         }
     </style>
 </head>
-<body>
-    <div class="app-header">
-        <div class="header-main">
-            <div class="header-left">
-                <div class="profile-icon">
-                    <i class="bi bi-person-fill"></i>
-                </div>
-                <div class="header-title">
-                    <h1>TEAMOWNIK</h1>
-                    <div class="header-subtitle">Witaj, @Model.UserFullName</div>
+
+<body class="bg-light" style="padding-top: 66px; padding-bottom: 80px;">
+@await Html.PartialAsync("_Navbar")
+
+<div class="container" style="max-width: 900px;">
+
+    @* @if (TempData["Success"] != null) *@
+    @* { *@
+    @*     <div class="alert alert-success alert-dismissible fade show custom-alert border-0" role="alert"> *@
+    @*         <div class="d-flex align-items-start gap-2"> *@
+    @*             <i class="bi bi-check-circle-fill fs-4 mt-1"></i> *@
+    @*             <div class="flex-grow-1"> *@
+    @*                 <strong>Sukces!</strong><br> *@
+    @*                 @TempData["Success"] *@
+    @*             </div> *@
+    @*         </div> *@
+    @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
+    @*     </div> *@
+    @* } *@
+    @* *@
+    @* @if (TempData["Error"] != null) *@
+    @* { *@
+    @*     <div class="alert alert-danger alert-dismissible fade show custom-alert border-0" role="alert"> *@
+    @*         <div class="d-flex align-items-start gap-2"> *@
+    @*             <i class="bi bi-x-circle-fill fs-4 mt-1"></i> *@
+    @*             <div class="flex-grow-1"> *@
+    @*                 <strong>Błąd!</strong><br> *@
+    @*                 @TempData["Error"] *@
+    @*             </div> *@
+    @*         </div> *@
+    @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
+    @*     </div> *@
+    @* } *@
+    @* *@
+    @* @if (TempData["Warning"] != null) *@
+    @* { *@
+    @*     <div class="alert alert-warning alert-dismissible fade show custom-alert border-0" role="alert"> *@
+    @*         <div class="d-flex align-items-start gap-2"> *@
+    @*             <i class="bi bi-exclamation-triangle-fill fs-4 mt-1"></i> *@
+    @*             <div class="flex-grow-1"> *@
+    @*                 <strong>Uwaga!</strong><br> *@
+    @*                 @TempData["Warning"] *@
+    @*             </div> *@
+    @*         </div> *@
+    @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
+    @*     </div> *@
+    @* } *@
+
+    <div class="mb-4">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 border">
+                    <div class="display-6 fw-bold">@Model.ActiveGroupsCount</div>
+                    <div class="small text-muted">Aktywne grupy</div>
                 </div>
             </div>
-            <i class="bi bi-bell bell-icon"></i>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 border">
+                    <div class="display-6 fw-bold">@Model.UnpaidSettlementsCount</div>
+                    <div class="small text-muted">Nierozliczone</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 border">
+                    <div class="display-6 fw-bold">@Model.UpcomingGamesCount</div>
+                    <div class="small text-muted">Nadchodzące spotkania</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 border">
+                    <div class="display-6 fw-bold">@Model.TotalUsersInGroups</div>
+                    <div class="small text-muted">Użytkownicy</div>
+                </div>
+            </div>
         </div>
     </div>
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert-message alert-success">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>@TempData["Success"]</span>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert-message alert-error">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>@TempData["Error"]</span>
-        </div>
-    }
-
-    <div class="stats-section">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">@Model.ActiveGroupsCount</div>
-                <div class="stat-label">Aktywne grupy</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">@Model.UnpaidSettlementsCount</div>
-                <div class="stat-label">Nierozliczone</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">@Model.UpcomingGamesCount</div>
-                <div class="stat-label">Nadchodzące<br>spotkania</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">@Model.TotalUsersInGroups</div>
-                <div class="stat-label">Użytkownicy</div>
-            </div>
-        </div>
+    
+    <div class="text-center mb-4">
+        <a href="/Games/Create" class="btn btn-success rounded-pill px-3 py-2 fw-bold shadow-sm btn-create-game">
+            <i class="bi bi-plus-circle-fill me-2 fs-5"></i>Nowe spotkanie
+        </a>
     </div>
-
-    @if (Model.MyOrganizedGames != null && Model.MyOrganizedGames.Any())
+    
+    @if (Model.MyOrganizedGames?.Any() == true)
     {
-        <div class="content-section">
-            <div class="section-header">
-                <div>
-                    <div class="section-title">Twoje spotkania <span class="section-count">(@Model.MyOrganizedGames.Count)</span></div>
-                </div>
-                <a href="/Games/Create" class="btn-new">+ Nowe</a>
+        <div class="bg-white p-3 shadow-sm mb-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">
+                    <i class="bi bi-star-fill text-success me-2"></i>Twoje spotkania (@Model.MyOrganizedGames.Count)
+                </h2>
             </div>
 
-            <div class="meetings-container">
-                @foreach (var game in Model.MyOrganizedGames)
-                {
-                    <div class="meeting-card @game.BorderColorClass">
-                        <div class="meeting-header">
-                            <div>
-                                <h3 class="meeting-title">@game.GameName</h3>
-                                <div class="meeting-organizer">Organizujesz</div>
-                            </div>
-                            @if (!string.IsNullOrEmpty(game.StatusBadgeText))
-                            {
-                                <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
-                            }
+            @foreach (var game in Model.MyOrganizedGames)
+            {
+                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+                    game.Status == "full" ? "bg-danger text-white" :
+                    "bg-secondary text-white";
+
+                <div class="card mb-3 shadow-sm border-0 card-organized">
+                    <div class="card-body position-relative">
+                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+
+                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+                
+                        <div class="d-flex align-items-center mb-2 small text-success fw-semibold">
+                            <i class="bi bi-star-fill me-2"></i>
+                            <span>Ty organizujesz</span>
                         </div>
-                        <div class="meeting-details">
-                            <div class="detail-row">
-                                <i class="bi bi-geo-alt-fill"></i>
-                                <span>@game.Location</span>
-                            </div>
-                            <div class="detail-row">
-                                <i class="bi bi-calendar-fill"></i>
-                                <span>@game.FormattedDateTime</span>
-                            </div>
-                            <div class="detail-row">
-                                <i class="bi bi-people-fill"></i>
-                                <span>@game.ParticipantsText</span>
-                            </div>
-                            @if (game.Cost > 0)
-                            {
-                                <div class="detail-row">
-                                    <i class="bi bi-credit-card-fill"></i>
-                                    <span>@game.Cost.ToString("0.00") zł</span>
-                                </div>
-                            }
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
                         </div>
-                        <a href="/Games/Manage/@game.GameId" class="btn-action btn-primary-action">Zarządzaj</a>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                            <span>@game.Location</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+
+                        @if (game.Cost > 0)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                                <span class="text-success">Darmowe</span>
+                            </div>
+                        }
+
+                        <a href="/Games/Manage/@game.GameId" class="btn btn-success w-100 rounded-3 fw-bold mt-3">
+                            <i class="bi bi-gear-fill me-2"></i>Zarządzaj
+                        </a>
                     </div>
-                }
-            </div>
+                </div>
+            }
         </div>
     }
 
-@if (Model.MyParticipatingGames != null && Model.MyParticipatingGames.Any())
-{
-    <div class="content-section">
-        <div class="meetings-container" style="padding-top: 20px;">
+    @if (Model.MyParticipatingGames?.Any() == true)
+    {
+        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+            <h2 class="h5 fw-bold mb-3">
+                <i class="bi bi-check-circle-fill text-info me-2"></i>Bierzesz udział (@Model.MyParticipatingGames.Count())
+            </h2>
+
             @foreach (var game in Model.MyParticipatingGames)
             {
-                <div class="meeting-card @game.BorderColorClass">
-                    <div class="meeting-header">
-                        <div>
-                            <h3 class="meeting-title">@game.GameName</h3>
-                            <!-- ✅ ULEPSZONE: Użyj nowych właściwości -->
-                            @if (!string.IsNullOrEmpty(game.UserParticipationStatus))
-                            {
-                                <div class="meeting-organizer" style="color: @game.UserParticipationColor;">
-                                    <i class="bi @game.UserParticipationIcon"></i> @game.UserParticipationStatus
-                                </div>
-                            }
-                        </div>
-                        @if (!string.IsNullOrEmpty(game.StatusBadgeText))
-                        {
-                            <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
-                        }
-                    </div>
-                    <div class="meeting-details">
-                        <div class="detail-row">
-                            <i class="bi bi-person-fill"></i>
-                            <span>@game.OrganizerName</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span>@game.Location</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-calendar-fill"></i>
-                            <span>@game.FormattedDateTime</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-people-fill"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-                        @if (game.Cost > 0)
-                        {
-                            <div class="detail-row">
-                                <i class="bi bi-credit-card-fill"></i>
-                                <span>@game.Cost.ToString("0.00") zł</span>
-                            </div>
-                        }
-                    </div>
-                    
-                    <div class="meeting-actions">
-                        <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 2;">
-                            Szczegóły
-                        </a>
-                        <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" style="flex: 1;">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn-action btn-resign-action" style="width: 100%;">
-                                @if (game.IsOnWaitlist)
-                                {
-                                    <text>Zrezygnuj z listy</text>
-                                }
-                                else
-                                {
-                                    <text>Zrezygnuj</text>
-                                }
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-}
+                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+                    game.Status == "full" ? "bg-danger text-white" :
+                    "bg-secondary text-white";
 
-@if (Model.MyGroupGames != null && Model.MyGroupGames.Any())
-{
-    <div class="content-section">
-        <div class="section-header">
-            <div>
-                <div class="section-title">Spotkania Twojej Grupy <span class="section-count">(@Model.MyGroupGames.Count)</span></div>
-                <div class="section-subtitle">Organizowane przez członków z Twojej grupy</div>
-            </div>
-        </div>
+                var cardClass = game.IsOnWaitlist ? "card-waitlist" : "card-participating";
 
-        <div class="meetings-container">
-            @foreach (var game in Model.MyGroupGames)
-            {
-                <div class="meeting-card @game.BorderColorClass">
-                    <div class="meeting-header">
-                        <div>
-                            <h3 class="meeting-title">@game.GameName</h3>
-                            <div class="meeting-organizer">
-                                Organizator: @game.OrganizerName
-                                @if (!string.IsNullOrEmpty(game.GroupName))
-                                {
-                                    <span class="badge-vip">⭐ @game.GroupName</span>
-                                }
+                <div class="card mb-3 shadow-sm border-0 @cardClass">
+                    <div class="card-body position-relative">
+                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+
+                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+
+                        @if (game.IsOnWaitlist)
+                        {
+                            <div class="d-flex align-items-center mb-2 small text-warning fw-semibold">
+                                <i class="bi bi-hourglass-split me-2"></i>
+                                <span>Lista rezerwowa</span>
                             </div>
-                        </div>
-                        @if (!string.IsNullOrEmpty(game.StatusBadgeText))
-                        {
-                            <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
-                        }
-                    </div>
-                    <div class="meeting-details">
-                        <div class="detail-row">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span>@game.Location</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-calendar-fill"></i>
-                            <span>@game.FormattedDateTime</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-people-fill"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-                        @if (game.Cost > 0)
-                        {
-                            <div class="detail-row">
-                                <i class="bi bi-credit-card-fill"></i>
-                                <span>@game.Cost.ToString("0.00") zł</span>
-                            </div>
-                        }
-                    </div>
-                    
-                    <div class="meeting-actions">
-                        @if (game.IsUserParticipant)
-                        {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 2;">
-                                Szczegóły
-                            </a>
-                            <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" style="flex: 1;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-action btn-resign-action" style="width: 100%;">
-                                    Zrezygnuj
-                                </button>
-                            </form>
-                        }
-                        else if (game.IsFull)
-                        {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
-                                Szczegóły
-                            </a>
-                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-action btn-outline-action" style="width: 100%;">
-                                    Dołącz do listy rezerwowej
-                                </button>
-                            </form>
-                        }
-                        else if (game.IsCancelled)
-                        {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="width: 100%;">
-                                Szczegóły
-                            </a>
                         }
                         else
                         {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
-                                Szczegóły
-                            </a>
-                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-action btn-primary-action" style="width: 100%;">
-                                    Zapisz się
-                                </button>
-                            </form>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-}
-@if (Model.PublicGames != null && Model.PublicGames.Any())
-{
-    <div class="content-section">
-        <div class="section-header">
-            <div>
-                <div class="section-title">Pozostałe dostępne <span class="section-count">(@Model.PublicGames.Count)</span></div>
-                <div class="section-subtitle">Otwarte publicznie w Twojej okolicy</div>
-            </div>
-        </div>
-
-        <div class="meetings-container">
-            @foreach (var game in Model.PublicGames)
-            {
-                <div class="meeting-card @game.BorderColorClass">
-                    <div class="meeting-header">
-                        <div>
-                            <h3 class="meeting-title">@game.GameName</h3>
-                            <div class="meeting-organizer">Organizator: @game.OrganizerName</div>
-                        </div>
-                        @if (!string.IsNullOrEmpty(game.StatusBadgeText))
-                        {
-                            <span class="badge-status @game.StatusBadgeClass">@game.StatusBadgeText</span>
-                        }
-                    </div>
-                    <div class="meeting-details">
-                        <div class="detail-row">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span>@game.Location</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-calendar-fill"></i>
-                            <span>@game.FormattedDateTime</span>
-                        </div>
-                        <div class="detail-row">
-                            <i class="bi bi-people-fill"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-                        @if (game.Cost > 0)
-                        {
-                            <div class="detail-row">
-                                <i class="bi bi-credit-card-fill"></i>
-                                <span>@game.Cost.ToString("0.00") zł</span>
+                            <div class="d-flex align-items-center mb-2 small text-info fw-semibold">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <span>Potwierdzony udział</span>
                             </div>
                         }
-                    </div>
-                    
-                    <div class="meeting-actions">
-                        @if (game.IsUserParticipant)
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                            <span>@game.Location</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+
+                        @if (game.Cost > 0)
                         {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 2;">
-                                Szczegóły
-                            </a>
-                            <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" style="flex: 1;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-action btn-resign-action" style="width: 100%;">
-                                    Zrezygnuj
-                                </button>
-                            </form>
-                        }
-                        else if (game.IsFull)
-                        {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
-                                Szczegóły
-                            </a>
-                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-action btn-outline-action" style="width: 100%;">
-                                    Dołącz do listy rezerwowej
-                                </button>
-                            </form>
-                        }
-                        else if (game.IsCancelled)
-                        {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="width: 100%;">
-                                Szczegóły
-                            </a>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                            </div>
                         }
                         else
                         {
-                            <a href="/Games/Details/@game.GameId" class="btn-action btn-outline-action" style="flex: 1;">
-                                Szczegóły
-                            </a>
-                            <form method="post" asp-controller="Games" asp-action="Join" asp-route-id="@game.GameId" style="flex: 2;">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                                <span class="text-success">Darmowe</span>
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
+
+                            <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" class="flex-grow-1">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-action btn-primary-action" style="width: 100%;">
-                                    Zapisz się
+                                <button class="btn @(game.IsOnWaitlist ? "btn-warning" : "btn-outline-danger") w-100 rounded-3 fw-semibold">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    @(game.IsOnWaitlist ? "Zrezygnuj z listy" : "Zrezygnuj")
                                 </button>
                             </form>
-                        }
+                        </div>
                     </div>
                 </div>
             }
-        </div>
-    </div>
-}
-
-    @if ((Model.MyOrganizedGames == null || !Model.MyOrganizedGames.Any()) && 
-         (Model.MyParticipatingGames == null || !Model.MyParticipatingGames.Any()) && 
-         (Model.MyGroupGames == null || !Model.MyGroupGames.Any()) && 
-         (Model.PublicGames == null || !Model.PublicGames.Any()))
-    {
-        <div class="content-section">
-            <div class="empty-state">
-                <i class="bi bi-calendar-x"></i>
-                <h3>Brak dostępnych spotkań</h3>
-                <p>Stwórz nowe spotkanie lub dołącz do grupy!</p>
-                <a href="/Games/Create" class="btn-new" style="margin-top: 20px;">Utwórz spotkanie</a>
-            </div>
         </div>
     }
 
-    <div class="bottom-nav">
-        <a href="/" class="nav-item active">
-            <i class="bi bi-house-fill"></i>
-        </a>
-        <a href="/Groups" class="nav-item">
-            <i class="bi bi-people-fill"></i>
-        </a>
-        <a href="/Games/Create" class="fab-button">+</a>
-        <a href="/Settlements/MyPayments" class="nav-item">
-            <i class="bi bi-credit-card-fill"></i>
-        </a>
-        <a href="/Profile" class="nav-item">
-            <i class="bi bi-three-dots"></i>
-        </a>
-    </div>
+    @if (Model.MyGroupGames?.Any() == true)
+    {
+        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+            <h2 class="h5 fw-bold mb-3">
+                <i class="bi bi-people-fill text-primary me-2"></i>Spotkania Twojej Grupy (@Model.MyGroupGames.Count())
+            </h2>
+            <p class="small text-muted mb-3">Organizowane przez członków z Twojej grupy</p>
 
-    <script>
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert-message');
-            alerts.forEach(alert => {
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-10px)';
-                setTimeout(() => alert.remove(), 300);
+            @foreach (var game in Model.MyGroupGames)
+            {
+                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+                    game.Status == "full" ? "bg-danger text-white" :
+                    "bg-secondary text-white";
+
+                var cardClass = game.IsFull ? "card-full" : "card-group";
+
+                <div class="card mb-3 shadow-sm border-0 @cardClass">
+                    <div class="card-body position-relative">
+                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+
+                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+
+                        <div class="d-flex align-items-center mb-2 small @(game.IsFull ? "text-danger" : "text-primary") fw-semibold">
+                            <i class="bi bi-@(game.IsFull ? "x-circle-fill" : "people-fill") me-2"></i>
+                            <span>@(game.IsFull ? "Spotkanie zapełnione" : "Spotkanie z Twojej grupy")</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-person-fill text-info me-3" style="width: 20px;"></i>
+                            <span>Organizator: <strong>@game.OrganizerName</strong>
+                                @if (game.GroupName != null)
+                                {
+                                    <span class="badge bg-primary text-white rounded-pill small ms-1">@game.GroupName</span>
+                                }
+                            </span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                            <span>@game.Location</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+
+                        @if (game.Cost > 0)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                                <span class="text-success">Darmowe</span>
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
+
+                            @if (!game.IsRegistrationClosed && !game.IsCancelled)
+                            {
+                                <button type="button" class="btn @(game.IsFull ? "btn-warning" : "btn-primary") rounded-3 fw-semibold flex-grow-1" 
+                                        data-bs-toggle="modal" data-bs-target="#joinModal@(game.GameId)">
+                                    <i class="bi bi-@(game.IsFull ? "hourglass-split" : "plus-circle-fill") me-1"></i>
+                                    @(game.IsFull ? "Lista rezerwowa" : "Zapisz się")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="modal fade" id="joinModal@(game.GameId)" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content rounded-4 p-3">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">Zapisz się na spotkanie</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="post" action="/Games/Join/@game.GameId">
+                                @Html.AntiForgeryToken()
+                                <div class="modal-body">
+                                    <p class="text-muted small mb-3">@game.GameName</p>
+                            
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-people-fill text-info me-2"></i>
+                                            Liczba gości (bez Ciebie)
+                                        </label>
+                                        <input type="number" name="guestsCount" class="form-control form-control-lg" 
+                                               value="0" min="0" max="10" />
+                                        <small class="text-muted">Osoby bez konta w aplikacji</small>
+                                    </div>
+
+                                    <div class="alert alert-info small mb-0">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Dostępne miejsca: <strong>@game.AvailableSpots</strong>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anuluj</button>
+                                    <button type="submit" class="btn btn-success">Potwierdź zapis</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.PublicGames?.Any() == true)
+    {
+        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+            <h2 class="h5 fw-bold mb-3">
+                <i class="bi bi-globe text-secondary me-2"></i>Pozostałe dostępne (@Model.PublicGames.Count())
+            </h2>
+            <p class="small text-muted mb-3">Otwarte publicznie w Twojej okolicy</p>
+
+            @foreach (var game in Model.PublicGames)
+            {
+                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+                    game.Status == "full" ? "bg-danger text-white" :
+                    "bg-secondary text-white";
+
+                var cardClass = game.IsFull ? "card-full" : "card-public";
+
+                <div class="card mb-3 shadow-sm border-0 @cardClass">
+                    <div class="card-body position-relative">
+                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+
+                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+
+                        <div class="d-flex align-items-center mb-2 small @(game.IsFull ? "text-danger" : "text-secondary") fw-semibold">
+                            <i class="bi bi-@(game.IsFull ? "x-circle-fill" : "globe") me-2"></i>
+                            <span>@(game.IsFull ? "Spotkanie zapełnione" : "Spotkanie publiczne")</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-person-fill text-info me-3" style="width: 20px;"></i>
+                            <span>Organizator: <strong>@game.OrganizerName</strong></span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                            <span>@game.Location</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                            <span>@game.ParticipantsText</span>
+                        </div>
+
+                        @if (game.Cost > 0)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                                <span class="text-success">Darmowe</span>
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
+
+                            @if (!game.IsRegistrationClosed && !game.IsCancelled)
+                            {
+                                <button type="button" class="btn @(game.IsFull ? "btn-warning" : "btn-success") rounded-3 fw-semibold flex-grow-1" 
+                                        data-bs-toggle="modal" data-bs-target="#joinModal@(game.GameId)">
+                                    <i class="bi bi-@(game.IsFull ? "hourglass-split" : "plus-circle-fill") me-1"></i>
+                                    @(game.IsFull ? "Lista rezerwowa" : "Zapisz się")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="modal fade" id="joinModal@(game.GameId)" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content rounded-4 p-3">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">Zapisz się na spotkanie</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="post" action="/Games/Join/@game.GameId">
+                                @Html.AntiForgeryToken()
+                                <div class="modal-body">
+                                    <p class="text-muted small mb-3">@game.GameName</p>
+                            
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-people-fill text-info me-2"></i>
+                                            Liczba gości (bez Ciebie)
+                                        </label>
+                                        <input type="number" name="guestsCount" class="form-control form-control-lg" 
+                                               value="0" min="0" max="10" />
+                                        <small class="text-muted">Osoby bez konta w aplikacji</small>
+                                    </div>
+
+                                    <div class="alert alert-info small mb-0">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Dostępne miejsca: <strong>@game.AvailableSpots</strong>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anuluj</button>
+                                    <button type="submit" class="btn btn-success">Potwierdź zapis</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if ((Model.MyOrganizedGames?.Any() != true) && 
+         (Model.MyParticipatingGames?.Any() != true) && 
+         (Model.MyGroupGames?.Any() != true) && 
+         (Model.PublicGames?.Any() != true))
+    {
+        <div class="card bg-white text-center mt-4 border-0 shadow-sm p-4">
+            <i class="bi bi-calendar-x display-1 text-muted opacity-25"></i>
+            <h5 class="mb-2 mt-3">Brak dostępnych spotkań</h5>
+            <p class="mb-3 small text-muted">Dołącz do grupy lub utwórz własne spotkanie!</p>
+            <a href="/Games/Create" class="btn btn-success rounded-pill px-4 fw-semibold">
+                <i class="bi bi-plus-circle-fill me-2"></i>Utwórz spotkanie
+            </a>
+        </div>
+    }
+
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
+    @if (TempData["Success"] != null)
+    {
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <strong>Sukces!</strong> @TempData["Success"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Błąd!</strong> @TempData["Error"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+    
+    @if (TempData["Warning"] != null)
+    {
+        <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Uwaga!</strong> @TempData["Warning"]
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     const alerts = document.querySelectorAll('.custom-alert');
+    //     alerts.forEach(function(alert) {
+    //         setTimeout(function() {
+    //             const bsAlert = bootstrap.Alert.getInstance(alert) || new bootstrap.Alert(alert);
+    //             bsAlert.close();
+    //         }, 8000);
+    //     });
+    // });
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,  
+                delay: 6000    
             });
-        }, 5000);
-    </script>
+        });
+
+        toastList.forEach(function(toast) {
+            toast.show();
+        });
+    });
+</script>
+
 </body>
 </html>

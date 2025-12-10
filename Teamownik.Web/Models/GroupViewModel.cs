@@ -48,18 +48,6 @@ public class GroupMemberViewModel
     
     public int GamesOrganized { get; set; }
     
-    public string JoinedAgo 
-    {
-        get
-        {
-            var days = (DateTime.Now - JoinedAt).TotalDays;
-            if (days < 1) return "Dziś";
-            if (days < 30) return $"{(int)days}d temu";
-            if (days < 365) return $"{(int)(days / 30)}m temu";
-            return $"{(int)(days / 365)}r temu";
-        }
-    }
-    
     public string StatsSummary 
     {
         get

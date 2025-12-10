@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Teamownik.Data.Models;
+using Teamownik.Web.Models;
 
 namespace Teamownik.Web.Controllers;
 
@@ -22,42 +23,42 @@ public class ProfileController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-        {
-            return RedirectToPage("/Identity/Account/Login");
-        }
-
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            return RedirectToPage("/Identity/Account/Login");
-        }
+        var user = await GetCurrentUserAsync();
+        if (user == null) return RedirectToLogin();
 
         return View(user);
     }
 
+    public async Task<IActionResult> Edit()
+    {
+        var user = await GetCurrentUserAsync();
+        if (user == null) return RedirectToLogin();
+
+        var model = new EditProfileViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            Email = user.Email ?? string.Empty
+        };
+
+        return View(model);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(string firstName, string lastName, string phoneNumber)
+    public async Task<IActionResult> Edit(EditProfileViewModel model)
     {
+        if (!ModelState.IsValid) return View(model);
+
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToPage("/Identity/Account/Login");
-            }
+            var user = await GetCurrentUserAsync();
+            if (user == null) return RedirectToLogin();
 
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return RedirectToPage("/Identity/Account/Login");
-            }
-
-            user.FirstName = firstName;
-            user.LastName = lastName;
-            user.PhoneNumber = phoneNumber;
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.PhoneNumber = model.PhoneNumber;
             user.UpdatedAt = DateTime.UtcNow;
 
             var result = await _userManager.UpdateAsync(user);
@@ -65,19 +66,33 @@ public class ProfileController : Controller
             if (result.Succeeded)
             {
                 TempData["Success"] = "Profil został zaktualizowany";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się zaktualizować profilu";
+                return RedirectToAction(nameof(Index));
             }
 
-            return RedirectToAction(nameof(Index));
+            TempData["Error"] = "Nie udało się zaktualizować profilu";
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View(model);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Błąd podczas aktualizacji profilu");
             TempData["Error"] = "Wystąpił błąd podczas aktualizacji profilu";
-            return RedirectToAction(nameof(Index));
+            return View(model);
         }
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Cancel() => RedirectToAction(nameof(Index));
+
+    private async Task<ApplicationUser?> GetCurrentUserAsync()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return string.IsNullOrEmpty(userId) ? null : await _userManager.FindByIdAsync(userId);
+    }
+
+    private IActionResult RedirectToLogin() => RedirectToPage("/Identity/Account/Login");
 }

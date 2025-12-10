@@ -10,479 +10,251 @@ Layout = null;
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #f5f5f5;
-            padding-bottom: 80px;
-            max-width: 430px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .create-header {
-            background: white;
-            padding: 15px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .back-button {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .bell-icon {
-            font-size: 24px;
-            color: #333;
-        }
-
-        .form-content {
-            background: white;
-            min-height: calc(100vh - 140px);
-            padding: 30px 20px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 12px;
-            color: #333;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 14px;
-            background: #fafafa;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #00bcd4;
-            background: white;
-        }
-
-        .form-input::placeholder {
-            color: #ccc;
-        }
-
-        .date-input-wrapper {
-            position: relative;
-        }
-
-        .date-input-wrapper i {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-            pointer-events: none;
-        }
-
-        .toggle-input-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .toggle-input-group .form-input {
-            flex: 1;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 28px;
-            flex-shrink: 0;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 34px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        .toggle-switch input:checked + .toggle-slider {
-            background-color: #4caf50;
-        }
-
-        .toggle-switch input:checked + .toggle-slider:before {
-            transform: translateX(22px);
-        }
-
-        .counter-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .counter-controls {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 10px 20px;
-            background: #fafafa;
-            border-radius: 25px;
-            border: 1px solid #e0e0e0;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .counter-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: white;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        }
-
-        .counter-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .counter-value {
-            font-size: 18px;
-            font-weight: 600;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-        }
-
-        .toggle-row-label {
-            font-size: 14px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 18px;
-            background: black;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 30px;
-            transition: all 0.3s;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 430px;
-            margin: 0 auto;
-            background: white;
-            padding: 12px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: #999;
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s;
-            flex: 1;
-            text-decoration: none;
-        }
-
-        .nav-item.active {
-            color: #00bcd4;
-        }
-
-        .nav-item i {
-            font-size: 24px;
-        }
-
-        .fab-button {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: black;
-            color: white;
-            border: none;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            margin-top: -28px;
-            text-decoration: none;
-        }
-
-        .group-select-wrapper {
-            margin-top: 10px;
-            display: none;
-        }
-
-        .group-select-wrapper.show {
-            display: block;
-        }
-
-        .error-message {
-            color: #ff5252;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-    </style>
 </head>
-<body>
-<!-- Header -->
-<div class="create-header">
-    <div class="header-left">
-        <a href="/" class="back-button">
-            <i class="bi bi-arrow-left"></i>
-        </a>
-        <div class="header-title">Nowa Rozgrywka</div>
+<body class="bg-light" style="padding-top: 66px; padding-bottom: 80px;">
+@await Html.PartialAsync("_Navbar")
+<div class="container" style="max-width: 900px;">
+
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-3 position-sticky" style="top: 66px; z-index: 1020;">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/" class="text-decoration-none fs-4 text-dark"><i class="bi bi-arrow-left"></i></a>
+            <div class="fw-bold fs-5 text-dark">Wypełnij szczegóły</div>
+        </div>
     </div>
-    <i class="bi bi-bell bell-icon"></i>
-</div>
 
-<div class="form-content">
-    <form method="post" asp-action="Create" asp-controller="Games" id="createGameForm">
-        @Html.AntiForgeryToken()
+    <div class="bg-white p-4 rounded-3 shadow-sm mb-4">
+        <form method="post" asp-action="Create" asp-controller="Games">
+            @Html.AntiForgeryToken()
 
-        <div class="form-group">
-            <label class="form-label" asp-for="GameName">Nazwa rozgrywki</label>
-            <input type="text"
-                   asp-for="GameName"
-                   class="form-input"
-                   placeholder="np. siatkówka">
-            <span asp-validation-for="GameName" class="error-message"></span>
-        </div>
 
-        <div class="form-group">
-            <label class="form-label" asp-for="GameDate">Data</label>
-            <div class="date-input-wrapper">
-                <input type="date"
-                       asp-for="GameDate"
-                       class="form-input"
-                       min="@DateTime.Now.ToString("yyyy-MM-dd")">
-                <i class="bi bi-calendar"></i>
-            </div>
-            <span asp-validation-for="GameDate" class="error-message"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="StartTime">Czas rozpoczęcia</label>
-            <div class="date-input-wrapper">
-                <input type="time"
-                       asp-for="StartTime"
-                       class="form-input">
-                <i class="bi bi-clock"></i>
-            </div>
-            <span asp-validation-for="StartTime" class="error-message"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="EndTime">Czas zakończenia</label>
-            <div class="date-input-wrapper">
-                <input type="time"
-                       asp-for="EndTime"
-                       class="form-input">
-                <i class="bi bi-clock"></i>
-            </div>
-            <span asp-validation-for="EndTime" class="error-message"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="Location">Miejsce</label>
-            <input type="text"
-                   asp-for="Location"
-                   class="form-input"
-                   placeholder="np. Orlik">
-            <span asp-validation-for="Location" class="error-message"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Kwota</label>
-            <div class="toggle-input-group">
-                <input type="number"
-                       asp-for="Cost"
-                       class="form-input"
-                       placeholder=""
-                       step="0.01"
-                       min="0"
-                       id="costInput"
-                       placeholder="np. 10 zł">
-                <label class="toggle-switch">
-                    <input type="checkbox" asp-for="IsPaid" id="isPaidToggle">
-                    <span class="toggle-slider"></span>
+            <div class="mb-4">
+                <label class="form-label small text-muted fw-bold text-uppercase" asp-for="GameName">
+                    <i class="bi bi-controller text-info me-1"></i>Nazwa rozgrywki
                 </label>
+                <input type="text" asp-for="GameName" class="form-control form-control-lg rounded-pill bg-light border-0" placeholder="np. Siatkówka">
+                <span asp-validation-for="GameName" class="text-danger small ms-2"></span>
             </div>
-            <span asp-validation-for="Cost" class="error-message"></span>
-        </div>
 
-        <div class="form-group">
-            <label class="form-label" asp-for="MaxParticipants">Limit miejsc</label>
-            <div class="counter-controls">
-                <button type="button" class="counter-btn" id="decrementBtn">-</button>
-                <div class="counter-value" id="counterDisplay">0</div>
-                <button type="button" class="counter-btn" id="incrementBtn">+</button>
+            <div class="mb-4">
+                <label class="form-label small text-muted fw-bold text-uppercase" asp-for="GameDate">
+                    <i class="bi bi-calendar-date-fill text-info me-1"></i>Data
+                </label>
+                <input type="date" asp-for="GameDate" class="form-control form-control-lg rounded-pill bg-light border-0" min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                <span asp-validation-for="GameDate" class="text-danger small ms-2"></span>
             </div>
-            <input type="hidden" asp-for="MaxParticipants" id="maxParticipantsInput" value="10">
-            <span asp-validation-for="MaxParticipants" class="error-message"></span>
-        </div>
 
-        <div class="toggle-row">
-            <label class="toggle-row-label">Opublikuj tylko dla grupy</label>
-            <label class="toggle-switch">
-                <input type="checkbox" asp-for="OnlyForGroup" id="onlyForGroupToggle">
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <label class="form-label small text-muted fw-bold text-uppercase" asp-for="StartTime">
+                        <i class="bi bi-clock-fill text-info me-1"></i>Początek
+                    </label>
+                    <input type="time" asp-for="StartTime" class="form-control form-control-lg rounded-pill bg-light border-0">
+                    <span asp-validation-for="StartTime" class="text-danger small ms-2"></span>
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted fw-bold text-uppercase" asp-for="EndTime">
+                        <i class="bi bi-clock-fill text-info me-1"></i>Koniec
+                    </label>
+                    <input type="time" asp-for="EndTime" class="form-control form-control-lg rounded-pill bg-light border-0">
+                    <span asp-validation-for="EndTime" class="text-danger small ms-2"></span>
+                </div>
+            </div>
 
-        <div class="group-select-wrapper" id="groupSelectWrapper">
-            <div class="form-group">
-                <label class="form-label">Wybierz grupę</label>
-                <select asp-for="GroupId" class="form-input">
-                    <option value="">Wybierz grupę...</option>
-                    @if (ViewBag.UserGroups != null)
+            <div class="mb-4">
+                <label class="form-label small text-muted fw-bold text-uppercase" asp-for="Location">
+                    <i class="bi bi-geo-alt-fill text-info me-1"></i>Miejsce
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0 rounded-start-pill text-info">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </span>
+                    <input type="text" asp-for="Location" class="form-control form-control-lg bg-light border-0 rounded-end-pill" placeholder="np. Orlik">
+                </div>
+                <span asp-validation-for="Location" class="text-danger small ms-2"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small text-muted fw-bold text-uppercase" asp-for="Cost">
+                    <i class="bi bi-credit-card-fill text-info me-1"></i>Koszt / zrzutka
+                </label>
+                <div class="d-flex gap-3 align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="input-group">
+                            <input type="number" asp-for="Cost" class="form-control form-control-lg bg-light border-0 rounded-start-3" placeholder="0" step="0.01" min="0">
+                            <span class="input-group-text bg-light border-0 rounded-end-3 fw-bold text-muted">PLN</span>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" asp-for="IsPaid" id="isPaidToggle">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small text-muted fw-bold text-uppercase" asp-for="MaxParticipants">
+                    <i class="bi bi-people-fill text-info me-1"></i>Limit miejsc
+                </label>
+                <div class="d-flex justify-content-center align-items-center gap-3 p-2 bg-light rounded-pill border-0">
+                    <button type="button" class="btn btn-white text-dark border rounded-circle" id="decrementBtn"><i class="bi bi-dash fs-4"></i></button>
+                    <span class="fs-4 fw-bold text-dark mx-3" id="counterDisplay">2</span>
+                    <button type="button" class="btn btn-white text-dark border rounded-circle" id="incrementBtn"><i class="bi bi-plus fs-4"></i></button>
+                </div>
+                <input type="hidden" asp-for="MaxParticipants" id="maxParticipantsInput" value="2">
+            </div>
+
+            <hr class="my-4 text-secondary opacity-25">
+
+            <div class="d-flex justify-content-between align-items-center py-2">
+                <div>
+                    <label class="fw-bold mb-0">
+                        <i class="bi bi-people-fill text-info me-1"></i>Tylko dla grupy
+                    </label>
+                    <small class="text-muted d-block">Widoczne tylko dla członków</small>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="OnlyForGroup" id="onlyForGroupToggle">
+                </div>
+            </div>
+
+            <div class="d-none mt-3 bg-light p-3 rounded-4" id="groupSelectWrapper">
+                <label class="form-label small fw-bold" asp-for="GroupId">Wybierz grupę</label>
+                <select asp-for="GroupId" class="form-select form-select-lg border-0 rounded-3 shadow-sm">
+                    <option value="">-- Wybierz z listy --</option>
+                    @if(ViewBag.UserGroups != null)
                     {
-                    @foreach (var group in (IEnumerable<Teamownik.Data.Models.Group>)ViewBag.UserGroups)
+                    @foreach(var group in (IEnumerable<Teamownik.Data.Models.Group>)ViewBag.UserGroups)
                     {
                     <option value="@group.GroupId">@group.GroupName</option>
                     }
                     }
                 </select>
             </div>
-        </div>
 
-        <div class="toggle-row">
-            <label class="toggle-row-label">Opublikuj dla wszystkich</label>
-            <label class="toggle-switch">
-                <input type="checkbox" asp-for="IsPublic" id="isPublicToggle" checked>
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
+            <div class="d-flex justify-content-between align-items-center py-2 mt-3">
+                <div>
+                    <label class="fw-bold mb-0">
+                        <i class="bi bi-globe text-info me-1"></i>Publiczne
+                    </label>
+                    <small class="text-muted d-block">Widoczne dla wszystkich w okolicy</small>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="IsPublic" id="isPublicToggle" checked>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-2 mt-3">
+                <div>
+                    <label class="fw-bold mb-0">
+                        <i class="bi bi-arrow-repeat text-info me-1"></i>Spotkanie cykliczne
+                    </label>
+                    <small class="text-muted d-block">Powtarzające się automatycznie</small>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="IsRecurring" id="isRecurringToggle">
+                </div>
+            </div>
 
-        <button type="submit" class="btn-submit">Utwórz</button>
-    </form>
+            <div class="d-none mt-3 bg-light p-3 rounded-4" id="recurringOptionsWrapper">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold" asp-for="RecurrencePattern">Częstotliwość</label>
+                    <select asp-for="RecurrencePattern" class="form-select form-select-lg border-0 rounded-3 shadow-sm">
+                        <option value="">-- Wybierz częstotliwość --</option>
+                        <option value="daily">Codziennie</option>
+                        <option value="weekly">Co tydzień</option>
+                        <option value="biweekly">Co dwa tygodnie</option>
+                        <option value="monthly">Co miesiąc</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-grid mt-5">
+                <button type="submit" class="btn btn-dark btn-lg rounded-pill fw-bold shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i> Utwórz rozgrywkę
+                </button>
+            </div>
+
+        </form>
+    </div>
 </div>
 
-<div class="bottom-nav">
-    <a href="/" class="nav-item">
-        <i class="bi bi-house-fill"></i>
-    </a>
-    <a href="/Groups" class="nav-item">
-        <i class="bi bi-people-fill"></i>
-    </a>
-    <a href="/Games/Create" class="fab-button active">+</a>
-    <a href="/Payments" class="nav-item">
-        <i class="bi bi-credit-card-fill"></i>
-    </a>
-    <a href="/Profile" class="nav-item">
-        <i class="bi bi-three-dots"></i>
-    </a>
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
+    @if (TempData["Success"] != null)
+    {
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Sukces!</strong> @TempData["Success"]
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                <strong>Błąd!</strong> @TempData["Error"]
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+    <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Uwaga!</strong> @TempData["Warning"]
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+    <div id="validationToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                <strong>Błąd!</strong>
+                <ul class="mb-0 mt-2 ps-3">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                    <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const decrementBtn = document.getElementById('decrementBtn');
     const incrementBtn = document.getElementById('incrementBtn');
     const counterDisplay = document.getElementById('counterDisplay');
     const maxParticipantsInput = document.getElementById('maxParticipantsInput');
+    let count = 2;
 
-    let count = 10;
-
-    decrementBtn.addEventListener('click', function() {
-        if (count > 2) {
+    decrementBtn.addEventListener('click', () => {
+        if(count > 2) {
             count--;
             updateCounter();
         }
     });
 
-    incrementBtn.addEventListener('click', function() {
-        if (count < 100) {
+    incrementBtn.addEventListener('click', () => {
+        if(count < 100) {
             count++;
             updateCounter();
         }
@@ -494,43 +266,60 @@ Layout = null;
     }
 
     const isPaidToggle = document.getElementById('isPaidToggle');
-    const costInput = document.getElementById('costInput');
+    const costInput = document.querySelector('input[name="Cost"]');
 
-    isPaidToggle.addEventListener('change', function() {
-        if (this.checked) {
-            costInput.disabled = false;
-            costInput.focus();
-        } else {
-            costInput.disabled = true;
-            costInput.value = '0';
-        }
+    isPaidToggle.addEventListener('change', function(){
+        costInput.disabled = !this.checked;
+        if(!this.checked) costInput.value = '0';
     });
 
-    if (!isPaidToggle.checked) {
-        costInput.disabled = true;
-    }
+    if(!isPaidToggle.checked) costInput.disabled = true;
 
     const onlyForGroupToggle = document.getElementById('onlyForGroupToggle');
     const groupSelectWrapper = document.getElementById('groupSelectWrapper');
     const isPublicToggle = document.getElementById('isPublicToggle');
 
-    onlyForGroupToggle.addEventListener('change', function() {
-        if (this.checked) {
-            groupSelectWrapper.classList.add('show');
+    onlyForGroupToggle.addEventListener('change', function(){
+        if(this.checked) {
+            groupSelectWrapper.classList.remove('d-none');
             isPublicToggle.checked = false;
         } else {
-            groupSelectWrapper.classList.remove('show');
+            groupSelectWrapper.classList.add('d-none');
         }
     });
 
-    isPublicToggle.addEventListener('change', function() {
-        if (this.checked) {
+    isPublicToggle.addEventListener('change', function(){
+        if(this.checked) {
             onlyForGroupToggle.checked = false;
-            groupSelectWrapper.classList.remove('show');
+            groupSelectWrapper.classList.add('d-none');
+        }
+    });
+    const isRecurringToggle = document.getElementById('isRecurringToggle');
+    const recurringOptionsWrapper = document.getElementById('recurringOptionsWrapper');
+
+    isRecurringToggle.addEventListener('change', function(){
+        if(this.checked) {
+            recurringOptionsWrapper.classList.remove('d-none');
+        } else {
+            recurringOptionsWrapper.classList.add('d-none');
         }
     });
 
-    updateHiddenDateTime();
+    updateCounter();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 6000
+            });
+        });
+        toastList.forEach(function(toast) {
+            toast.show();
+        });
+    });
 </script>
+
 </body>
 </html>

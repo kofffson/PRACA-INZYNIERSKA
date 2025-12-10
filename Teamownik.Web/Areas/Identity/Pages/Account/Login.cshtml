@@ -1,154 +1,130 @@
 ﻿@page
 @model Teamownik.Web.Areas.Identity.Pages.Account.LoginModel
 
-
 @{
-    ViewData["Title"] = "Logowanie";
-    Layout = null;
+ViewData["Title"] = "Logowanie";
+Layout = null;
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="pl" data-bs-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 {
-            font-size: 32px;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .subtitle {
-            color: #999;
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #000;
-        }
-        input::placeholder {
-            color: #ccc;
-        }
-        .btn-submit {
-            width: 100%;
-            padding: 18px;
-            background: #000;
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 30px;
-            transition: background 0.3s;
-        }
-        .btn-submit:hover {
-            background: #333;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .footer a {
-            color: #000;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .error-message {
-            color: #ff3b30;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        .show-password {
-            position: relative;
-        }
-        .show-password button {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
-<body>
-<div class="container">
-    <h1>Logowanie</h1>
-    <p class="subtitle">Witaj!</p>
 
-    <form method="post">
-        <div asp-validation-summary="ModelOnly" class="error-message"></div>
+<body class="bg-light">
 
-        <div class="form-group">
-            <label asp-for="Input.Email">E-mail</label>
-            <input asp-for="Input.Email" type="email" placeholder="Wpisz e-mail" />
-            <span asp-validation-for="Input.Email" class="error-message"></span>
+<div class="container" style="max-width: 500px; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+
+    <div class="w-100">
+        <div class="text-center mb-5">
+            <i class="bi bi-controller fs-1 text-info mb-3"></i>
+            <h1 class="h3 fw-bold mb-2">Witaj w Teamownik</h1>
+            <p class="text-muted">Zaloguj się do swojego konta</p>
         </div>
 
-        <div class="form-group">
-            <label asp-for="Input.Password">Hasło</label>
-            <div class="show-password">
-                <input asp-for="Input.Password" type="password" id="password" placeholder="Wpisz hasło" />
-                <button type="button" onclick="togglePassword()">👁</button>
-            </div>
-            <span asp-validation-for="Input.Password" class="error-message"></span>
-        </div>
+        <div class="bg-white p-4 shadow-sm rounded-4">
+            <form method="post">
+                @Html.AntiForgeryToken()
 
-        <button type="submit" class="btn-submit">Zaloguj się</button>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-3" role="alert"></div>
 
-        <div class="footer">
-            <a asp-page="./Register">Utwórz konto</a>
+                <div class="mb-4">
+                    <label class="form-label small text-muted fw-bold text-uppercase" asp-for="Input.Email">
+                        <i class="bi bi-envelope-fill text-info me-1"></i>E-mail
+                    </label>
+                    <input asp-for="Input.Email" type="email" class="form-control form-control-lg rounded-3 bg-light border-0" placeholder="Wpisz e-mail" autofocus />
+                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small text-muted fw-bold text-uppercase" asp-for="Input.Password">
+                        <i class="bi bi-lock-fill text-info me-1"></i>Hasło
+                    </label>
+                    <div class="position-relative">
+                        <input asp-for="Input.Password" type="password" id="password" class="form-control form-control-lg rounded-3 bg-light border-0" placeholder="Wpisz hasło" />
+                        <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted" onclick="togglePassword()" style="text-decoration: none; z-index: 10;">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-dark btn-lg w-100 rounded-3 fw-bold">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Zaloguj się
+                </button>
+
+                <div class="text-center mt-4">
+                    <a asp-page="./Register" class="text-decoration-none">Nie masz konta? <strong>Zarejestruj się</strong></a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
+
 </div>
 
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 20px;">
+    @if (TempData["Success"] != null)
+    {
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Sukces!</strong> @TempData["Success"]
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                <strong>Błąd!</strong> @TempData["Error"]
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function togglePassword() {
         var input = document.getElementById("password");
-        input.type = input.type === "password" ? "text" : "password";
+        var icon = document.getElementById("toggleIcon");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 6000
+            });
+        });
+        toastList.forEach(function(toast) {
+            toast.show();
+        });
+    });
 </script>
+
 </body>
 </html>

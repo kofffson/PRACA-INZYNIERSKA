@@ -17,8 +17,6 @@ public class TeamownikDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Game> Games { get; set; }
     public DbSet<GameParticipant> GameParticipants { get; set; }
     public DbSet<Settlement> Settlements { get; set; }
-    public DbSet<GroupInvitation> GroupInvitations { get; set; }
-    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -108,25 +106,6 @@ public class TeamownikDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(e => e.Recipient)
                 .WithMany(u => u.PaymentsToReceive)
                 .HasForeignKey(e => e.RecipientId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-        
-        builder.Entity<GroupInvitation>(entity =>
-        {
-            entity.HasKey(e => e.InvitationId);
-            entity.Property(e => e.InvitedEmail).IsRequired().HasMaxLength(256);
-            entity.Property(e => e.Token).IsRequired().HasMaxLength(100);
-            
-            entity.HasIndex(e => e.Token).IsUnique();
-            
-            entity.HasOne(e => e.Group)
-                .WithMany(g => g.Invitations)
-                .HasForeignKey(e => e.GroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-                
-            entity.HasOne(e => e.Inviter)
-                .WithMany(u => u.SentInvitations)
-                .HasForeignKey(e => e.InvitedBy)
                 .OnDelete(DeleteBehavior.Restrict);
         });
         

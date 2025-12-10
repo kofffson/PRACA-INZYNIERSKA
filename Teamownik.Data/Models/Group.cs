@@ -11,5 +11,4 @@ public class Group
     public ICollection<GroupMember> Members { get; set; } = new List<GroupMember>();
     public ICollection<Game> Games { get; set; } = new List<Game>();
     public ICollection<GroupMessage> Messages { get; set; } = new List<GroupMessage>();
-    public ICollection<GroupInvitation> Invitations { get; set; } = new List<GroupInvitation>();
 }

@@ -13,7 +13,12 @@ public class Settlement
     public DateTime? PaidAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
-    // Navigation properties
+    public string? PaymentMethod { get; set; }
+    public string? PaymentReference { get; set; } 
+    public string? PaymentProviderId { get; set; } 
+    public string Status { get; set; } = "pending"; 
+    public string? Notes { get; set; } 
+    
     public Game Game { get; set; } = null!;
     public ApplicationUser Payer { get; set; } = null!;
     public ApplicationUser Recipient { get; set; } = null!;

@@ -1,7 +1,7 @@
 ﻿@model Teamownik.Web.Models.GroupDetailsViewModel
 @{
-    ViewData["Title"] = Model.GroupName;
-    Layout = null;
+ViewData["Title"] = Model.GroupName;
+Layout = null;
 }
 
 <!DOCTYPE html>
@@ -10,735 +10,437 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@Model.GroupName</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #f5f5f5;
             padding-bottom: 80px;
-            max-width: 430px;
-            margin: 0 auto;
-            position: relative;
+            padding-top: 66px;
+            background-color: #f8f9fa;
         }
 
-        .group-header {
-            background: white;
-            padding: 15px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        .centered-content {
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .header-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .back-button {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .bell-icon {
-            font-size: 24px;
-            color: #333;
-        }
-
-        .group-info-header {
-            text-align: center;
-            padding: 10px 0;
-        }
-
-        .group-name {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .group-meta {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .tab-nav {
-            display: flex;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            position: sticky;
-            top: 100px;
-            z-index: 999;
-        }
-
-        .tab-button {
-            flex: 1;
-            padding: 15px 10px;
-            background: none;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            color: #999;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab-button.active {
-            color: #00bcd4;
-            border-bottom-color: #00bcd4;
-        }
-
-        .tab-content {
-            display: none;
-            min-height: calc(100vh - 200px);
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .members-section {
-            padding: 20px;
-        }
-
-        .member-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            border-radius: 12px;
-            background: #fafafa;
-            margin-bottom: 10px;
-        }
-
-        .member-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .member-avatar {
-            position: relative;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .vip-corner-badge {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: #ffd700;
-            color: #333;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-        }
-
-        .member-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .member-name {
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-        }
-
-        .member-stats {
-            font-size: 12px;
-            color: #4caf50;
-            font-weight: 600;
-            margin: 2px 0;
-        }
-
-        .member-joined {
-            font-size: 11px;
-            color: #999;
-        }
-
-        .badge-vip {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #333;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            margin-left: 6px;
-        }
-
-        .member-actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        .btn-member-action {
-            padding: 6px 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s;
-        }
-
-        .btn-vip {
-            background: #ffd700;
-            color: #333;
-        }
-
-        .btn-vip:hover {
-            background: #ffed4a;
-            transform: translateY(-1px);
-        }
-
-        .btn-remove {
-            background: #ff5252;
-            color: white;
-        }
-
-        .btn-remove:hover {
-            background: #ff6b6b;
-            transform: translateY(-1px);
-        }
-
-        .games-section {
-            padding: 20px;
-        }
-
-        .game-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border: 2px solid #e0e0e0;
-            text-decoration: none;
-            display: block;
-            color: inherit;
-            transition: all 0.3s;
-        }
-
-        .game-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-color: #00bcd4;
-        }
-
-        .game-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .game-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .game-info-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .game-info-row i {
-            width: 18px;
-        }
-
-        .invite-section {
-            padding: 20px;
-        }
-
-        .invite-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 14px;
-        }
-
-        .btn-invite {
-            padding: 15px;
-            background: black;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .action-buttons {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-leave {
-            background: white;
-            color: #ff5252;
-            border: 2px solid #ff5252;
-        }
-
-        .btn-leave:hover {
-            background: #ff5252;
-            color: white;
-        }
-
-        .btn-deactivate {
-            background: #ff5252;
-            color: white;
-        }
-
-        .btn-deactivate:hover {
-            background: #ff6b6b;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-            display: block;
-            opacity: 0.3;
-        }
-
-        .empty-state h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .group-stats {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-        }
-
-        .stat-item {
-            flex: 1;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #00bcd4;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .alert-message {
-            margin: 10px 20px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            animation: slideDown 0.3s ease;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        @@keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 430px;
-            margin: 0 auto;
-            background: white;
-            padding: 12px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: #999;
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s;
-            flex: 1;
-            text-decoration: none;
-        }
-
-        .nav-item.active {
-            color: #00bcd4;
-        }
-
-        .nav-item i {
-            font-size: 24px;
-        }
-
-        .fab-button {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: black;
-            color: white;
-            border: none;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            margin-top: -28px;
-            text-decoration: none;
+        .header-sticky-offset {
+            top: 66px;
+            z-index: 990;
         }
     </style>
 </head>
-<body>
-<div class="group-header">
-    <div class="header-top">
-        <div class="header-left">
-            <a href="/Groups" class="back-button">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <div class="header-title">Szczegóły grupy</div>
-        </div>
-        <i class="bi bi-bell bell-icon"></i>
-    </div>
-    <div class="group-info-header">
-        <div class="group-name">@Model.GroupName</div>
-        <div class="group-meta">
-            @Model.MemberCount członków • Założyciel: @Model.CreatorName
+<body class="bg-light" style="padding-top: 66px; padding-bottom: 80px;">
+
+@await Html.PartialAsync("_Navbar")
+
+<div class="container" style="max-width: 900px;">
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-3 position-sticky" style="top: 66px; z-index: 1020;">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/Groups" class="text-decoration-none fs-4 text-dark"><i class="bi bi-arrow-left"></i></a>
+            <div class="fw-bold fs-5 text-dark">Szczegóły grupy</div>
         </div>
     </div>
 </div>
 
-@if (TempData["Success"] != null)
-{
-<div class="alert-message alert-success">
-    <i class="bi bi-check-circle-fill"></i>
-    <span>@TempData["Success"]</span>
-</div>
-}
-@if (TempData["Error"] != null)
-{
-<div class="alert-message alert-error">
-    <i class="bi bi-exclamation-triangle-fill"></i>
-    <span>@TempData["Error"]</span>
-</div>
-}
+<div class="container" style="max-width: 900px;">
 
-<div class="tab-nav">
-    <button class="tab-button active" data-tab="members">
-        <i class="bi bi-people-fill"></i> Członkowie
-    </button>
-    <button class="tab-button" data-tab="games">
-        <i class="bi bi-calendar-event-fill"></i> Spotkania
-    </button>
-    @if (Model.IsCreator)
-    {
-    <button class="tab-button" data-tab="settings">
-        <i class="bi bi-gear-fill"></i> Więcej
-    </button>
-    }
-</div>
-
-<div class="tab-content active" id="members">
-    <div class="group-stats">
-        <div class="stats-container">
-            <div class="stat-item">
-                <div class="stat-value">@Model.TotalGamesPlayed</div>
-                <div class="stat-label">Rozegrane gry</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">@Model.TotalGamesOrganized</div>
-                <div class="stat-label">Zorganizowane</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">@Model.VIPCount</div>
-                <div class="stat-label">VIP-owie</div>
-            </div>
+    <div class="bg-white shadow-sm p-3 mb-3 rounded-3 mt-3">
+        <div class="text-center">
+            <h1 class="h5 fw-bold mb-1">@Model.GroupName</h1>
+            <p class="text-muted small mb-0">
+                @Model.MemberCount członków • Założyciel: @Model.CreatorName
+            </p>
         </div>
     </div>
 
-    <div class="members-section">
-        @foreach (var member in Model.Members.OrderByDescending(m => m.IsVIP).ThenByDescending(m => m.GamesOrganized).ThenByDescending(m => m.GamesPlayed))
+    <ul class="nav nav-underline nav-fill bg-white mb-3 shadow-sm rounded-3" id="groupTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active text-dark fw-bold py-3" id="members-tab" data-bs-toggle="tab" data-bs-target="#members" type="button" role="tab">
+                <i class="bi bi-people-fill"></i> <span class="d-none d-sm-inline">Członkowie</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark fw-bold py-3" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
+                <i class="bi bi-chat-dots-fill"></i> <span class="d-none d-sm-inline">Czat</span>
+            </button>
+        </li>
+        @if (Model.IsCreator)
         {
-        <div class="member-card">
-            <div class="member-left">
-                <div class="member-avatar">
-                    @if (string.IsNullOrEmpty(member.UserName))
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark fw-bold py-3" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                <i class="bi bi-gear-fill"></i>
+            </button>
+        </li>
+        }
+    </ul>
+
+    <div class="tab-content" id="groupTabsContent">
+
+        <div class="tab-pane fade show active" id="members" role="tabpanel">
+            <div class="bg-white p-3 mb-3 border-bottom shadow-sm rounded-3">
+                <div class="row text-center g-2">
+                    <div class="col-4">
+                        <div class="fw-bold fs-5 text-info">@Model.TotalGamesPlayed</div>
+                        <div class="small text-muted">Rozegrane</div>
+                    </div>
+                    <div class="col-4 border-start border-end">
+                        <div class="fw-bold fs-5 text-info">@Model.TotalGamesOrganized</div>
+                        <div class="small text-muted">Zorganizowane</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-5 text-info">@Model.VIPCount</div>
+                        <div class="small text-muted">VIP-owie</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pb-5">
+                @foreach (var member in Model.Members.OrderByDescending(m => m.IsVIP).ThenByDescending(m => m.GamesOrganized))
+                {
+                <div class="card border-0 shadow-sm mb-2">
+                    <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="position-relative">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm text-white"
+                                     style="width: 48px; height: 48px; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    @(string.IsNullOrEmpty(member.UserName) ? "?" : member.UserName.Substring(0, 1).ToUpper())
+                                </div>
+                                @if (member.IsVIP)
+                                {
+                                <span class="position-absolute bottom-0 start-100 translate-middle badge rounded-circle bg-warning border border-light p-1">
+                                            <i class="bi bi-star-fill text-dark" style="font-size: 0.6rem;"></i>
+                                        </span>
+                                }
+                            </div>
+                            <div>
+                                <div class="fw-bold d-flex align-items-center gap-1">
+                                    @member.UserName
+                                    @if (member.IsVIP) { <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.6rem;">VIP</span> }
+                                </div>
+                                <div class="small fw-bold text-success">@member.StatsSummary</div>
+                            </div>
+                        </div>
+
+                        @if (Model.IsCreator && member.UserId != Model.CurrentUserId)
+                        {
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form method="post" asp-controller="Groups" asp-action="ToggleVIP">
+                                        <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                        <input type="hidden" name="userId" value="@member.UserId" />
+                                        <button class="dropdown-item" type="submit">
+                                            <i class="bi bi-star me-2"></i> @(member.IsVIP ? "Zabierz VIP" : "Nadaj VIP")
+                                        </button>
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#removeMemberModal-@member.UserId">
+                                        <i class="bi bi-trash me-2"></i> Usuń z grupy
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="modal fade" id="removeMemberModal-@member.UserId" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Potwierdź usunięcie</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Czy na pewno chcesz usunąć użytkownika <strong>@member.UserName</strong> z grupy?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                                        <form method="post" asp-controller="Groups" asp-action="RemoveMember">
+                                            <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                            <input type="hidden" name="userId" value="@member.UserId" />
+                                            <button class="btn btn-danger" type="submit">Usuń</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="games" role="tabpanel">
+            <div class="card shadow-sm p-5 rounded-4 text-center text-muted border-0">
+                <i class="bi bi-calendar-event fs-1 opacity-50 mb-3"></i>
+                <div class="small">Lista spotkań grupowych pojawi się tutaj.</div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="chat" role="tabpanel">
+            <div class="d-flex flex-column bg-white shadow-sm rounded-3" style="min-height: calc(100vh - 400px);">
+
+                <div class="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-3" id="messagesContainer">
+
+                    @if (Model.RecentMessages != null && Model.RecentMessages.Any())
                     {
-                    <i class="bi bi-person-fill"></i>
+                    @foreach (var msg in Model.RecentMessages)
+                    {
+                    bool isMine = msg.UserId == Model.CurrentUserId;
+                    <div class="d-flex flex-column @(isMine ? "align-items-end" : "align-items-start")">
+                        @if (!isMine) { <small class="text-muted ms-1 mb-1" style="font-size: 0.75rem;">@msg.User.FullName</small> }
+                        <div class="shadow-sm"
+                             style="max-width: 75%; padding: 10px 15px;
+                                 border-radius: 1.2rem;
+                             @(isMine ? "background-color: #00bcd4; color: white; border-bottom-right-radius: 0.2rem;" : "background-color: #e9ecef; color: #212529; border-bottom-left-radius: 0.2rem;")">
+                            @msg.MessageText
+                        </div>
+                        <small class="text-muted mt-1 mx-1" style="font-size: 0.7rem;">@msg.SentAt.ToLocalTime().ToString("HH:mm")</small>
+                    </div>
+                    }
                     }
                     else
                     {
-                    @member.UserName.Substring(0, 1)
-                    }
-                    @if (member.IsVIP)
-                    {
-                    <div class="vip-corner-badge">
-                        <i class="bi bi-star-fill"></i>
+                    <div class="text-center my-auto opacity-50" id="emptyChatPlaceholder">
+                        <i class="bi bi-chat-dots fs-1"></i>
+                        <p>Tu jest cicho... Napisz coś!</p>
                     </div>
                     }
                 </div>
-                <div class="member-info">
-                    <div class="member-name">
-                        @member.UserName
-                        @if (member.IsVIP)
-                        {
-                        <span class="badge-vip">VIP</span>
-                        }
-                    </div>
-                    <div class="member-stats">
-                        @member.StatsSummary
-                    </div>
-                    <div class="member-joined">
-                        Dołączył @member.JoinedAgo
-                    </div>
-                </div>
-            </div>
 
-            @if (Model.IsCreator && member.UserId != Model.CurrentUserId)
-            {
-            <div class="member-actions">
-                <form method="post" asp-controller="Groups" asp-action="ToggleVIP" asp-route-groupId="@Model.GroupId" asp-route-userId="@member.UserId" style="display: inline;">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="btn-member-action btn-vip">
-                        @(member.IsVIP ? "Usuń VIP" : "Dodaj VIP")
-                    </button>
-                </form>
-                <form method="post" asp-controller="Groups" asp-action="RemoveMember" asp-route-groupId="@Model.GroupId" asp-route-userId="@member.UserId" style="display: inline;">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="btn-member-action btn-remove" onclick="return confirm('Czy na pewno chcesz usunąć @member.UserName z grupy?')">
-                        Usuń
-                    </button>
-                </form>
+                <div class="bg-white p-3 border-top">
+                    <form id="chatForm" class="input-group">
+                        @Html.AntiForgeryToken()
+                        <input type="text" id="messageInput" class="form-control rounded-pill bg-light border-0 px-3" placeholder="Napisz wiadomość..." required autocomplete="off">
+                        <button class="btn btn-info rounded-circle ms-2 shadow-sm text-white" style="width: 40px; height: 40px;" type="submit" id="sendButton">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
-            }
         </div>
-        }
-    </div>
-</div>
+        @if (Model.IsCreator)
+        {
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+            <div class="pb-5">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Dodaj członka</h5>
+                        <p class="text-muted small">Wpisz adres email użytkownika, aby dodać go do grupy.</p>
+                        <form method="post" asp-controller="Groups" asp-action="AddMemberByUsername">
+                            <input type="hidden" name="groupId" value="@Model.GroupId" />
+                            <div class="input-group mb-3">
+                                <input type="text" name="username" class="form-control" placeholder="Email użytkownika" required>
+                                <button class="btn btn-dark" type="submit">Dodaj</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-<div class="tab-content" id="games">
-    <div class="games-section">
-        @if (Model.UpcomingGames.Any())
-        {
-        @foreach (var game in Model.UpcomingGames)
-        {
-        <a href="/Games/Details/@game.GameId" class="game-card">
-            <div class="game-title">@game.GameName</div>
-            <div class="game-info">
-                <div class="game-info-row">
-                    <i class="bi bi-person-fill"></i>
-                    <span>@game.Organizer.FullName</span>
-                </div>
-                <div class="game-info-row">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    <span>@game.Location</span>
-                </div>
-                <div class="game-info-row">
-                    <i class="bi bi-calendar-fill"></i>
-                    <span>@game.StartDateTime.ToString("dd.MM.yyyy HH:mm")</span>
-                </div>
-                <div class="game-info-row">
-                    <i class="bi bi-people-fill"></i>
-                    <span>@game.Participants.Count(p => p.Status == "confirmed")/@game.MaxParticipants uczestników</span>
-                </div>
+                <hr class="my-4">
+
+                <button type="button" class="btn btn-outline-danger w-100 py-3 rounded-4 fw-bold" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i> Dezaktywuj grupę
+                </button>
             </div>
-        </a>
-        }
+        </div>
         }
         else
         {
-        <div class="empty-state">
-            <i class="bi bi-calendar-x"></i>
-            <h3>Brak nadchodzących spotkań</h3>
-            <p>Bądź pierwszym, który zorganizuje spotkanie dla grupy!</p>
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+            <div class="p-4">
+                <button type="button" class="btn btn-outline-danger w-100 py-3 rounded-4 fw-bold" data-bs-toggle="modal" data-bs-target="#leaveModal">
+                    <i class="bi bi-box-arrow-right me-2"></i> Opuść grupę
+                </button>
+            </div>
         </div>
         }
     </div>
+
 </div>
 
-@if (Model.IsCreator)
-{
-<div class="tab-content" id="settings">
-    <div class="invite-section">
-        <h3 style="margin-bottom: 15px;">Zaproś członka</h3>
-        <form method="post" asp-action="Invite" asp-route-groupId="@Model.GroupId" class="invite-form">
-            @Html.AntiForgeryToken()
-            <input type="email" name="email" class="form-input" placeholder="Adres e-mail" required>
-            <button type="submit" class="btn-invite">Wyślij zaproszenie</button>
-        </form>
-    </div>
-    <div class="action-buttons">
-        <form method="post" asp-action="Deactivate" asp-route-id="@Model.GroupId">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn-action btn-deactivate" 
-                    onclick="return confirm('Czy na pewno chcesz dezaktywować grupę?')">
-                Dezaktywuj grupę
-            </button>
-        </form>
+<div class="modal fade" id="deactivateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Potwierdź dezaktywację</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Czy na pewno chcesz dezaktywować grupę <strong>@Model.GroupName</strong>? Nie można tego cofnąć.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <form method="post" asp-action="Deactivate" asp-route-id="@Model.GroupId">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-danger" type="submit">Dezaktywuj</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
-}
-else
-{
-<div class="action-buttons" style="padding-top: 20px;">
-    <form method="post" asp-action="Leave" asp-route-id="@Model.GroupId">
-        @Html.AntiForgeryToken()
-        <button type="submit" class="btn-action btn-leave" onclick="return confirm('Czy na pewno chcesz opuścić grupę?')">
-            Opuść grupę
-        </button>
-    </form>
-</div>
-}
 
-<div class="bottom-nav">
-    <a href="/" class="nav-item">
-        <i class="bi bi-house-fill"></i>
-    </a>
-    <a href="/Groups" class="nav-item active">
-        <i class="bi bi-people-fill"></i>
-    </a>
-    <a href="/Games/Create" class="fab-button">+</a>
-    <a href="/Settlements/MyPayments" class="nav-item">
-        <i class="bi bi-credit-card-fill"></i>
-    </a>
-    <a href="/Profile" class="nav-item">
-        <i class="bi bi-three-dots"></i>
-    </a>
+<div class="modal fade" id="leaveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Potwierdź opuszczenie</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Czy na pewno chcesz opuścić grupę <strong>@Model.GroupName</strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <form method="post" asp-action="Leave" asp-route-id="@Model.GroupId">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-danger" type="submit">Opuść</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
+    @if (TempData["Success"] != null)
+    {
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Sukces!</strong> @TempData["Success"]
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                <strong>Błąd!</strong> @TempData["Error"]
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+    <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Uwaga!</strong> @TempData["Warning"]
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    }
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
 <script>
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabName = button.dataset.tab;
-
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-
-            button.classList.add('active');
-            if (tabName !== 'chat') { 
-                document.getElementById(tabName).classList.add('active');
-            }
-            
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 6000
+            });
+        });
+        toastList.forEach(function(toast) {
+            toast.show();
         });
     });
 
+    const groupId = @Model.GroupId;
+    const currentUserId = "@Model.CurrentUserId";
+    const messagesContainer = document.getElementById('messagesContainer');
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const emptyChatPlaceholder = document.getElementById('emptyChatPlaceholder');
 
-    setTimeout(function() {
-        const alerts = document.querySelectorAll('.alert-message');
-        alerts.forEach(alert => {
-            alert.style.opacity = '0';
-            alert.style.transform = 'translateY(-10px)';
-            setTimeout(() => alert.remove(), 300);
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chathub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    function appendMessage(senderName, messageText, sentTime, senderId) {
+        const isMine = senderId === currentUserId;
+        const alignClass = isMine ? "align-items-end" : "align-items-start";
+        const messageColor = isMine
+            ? "background-color: #00bcd4; color: white; border-bottom-right-radius: 0.2rem;"
+            : "background-color: #e9ecef; color: #212529; border-bottom-left-radius: 0.2rem;";
+
+        const msgHtml = `
+            <div class="d-flex flex-column ${alignClass}">
+                ${!isMine ? `<small class="text-muted ms-1 mb-1" style="font-size: 0.75rem;">${senderName}</small>` : ''}
+                <div class="shadow-sm"
+                     style="max-width: 75%; padding: 10px 15px; 
+                     border-radius: 1.2rem;
+                     ${messageColor}">
+                    ${messageText}
+                </div>
+                <small class="text-muted mt-1 mx-1" style="font-size: 0.7rem;">${sentTime}</small>
+            </div>
+        `;
+        messagesContainer.insertAdjacentHTML('beforeend', msgHtml);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        const currentPlaceholder = document.getElementById('emptyChatPlaceholder');
+        if (currentPlaceholder) currentPlaceholder.remove();
+    }
+
+    connection.on("ReceiveMessage", function (senderName, messageText, sentTime, senderId) {
+        appendMessage(senderName, messageText, sentTime, senderId);
+    });
+
+    connection.start().then(function () {
+        console.log("SignalR Connected.");
+        connection.invoke("JoinGroup", groupId.toString()).catch(function (err) {
+            return console.error(err.toString());
         });
-    }, 5000);
+        const chatTab = document.getElementById('chat');
+        if (chatTab && chatTab.classList.contains('active')) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    chatForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const message = messageInput.value.trim();
+
+        if (message) {
+            connection.invoke("SendMessageToGroup", groupId, message).then(() => {
+                messageInput.value = "";
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+        }
+    });
+
+    document.getElementById('chat-tab').addEventListener('shown.bs.tab', function () {
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
+    });
+
 </script>
 </body>
 </html>

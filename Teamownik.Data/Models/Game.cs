@@ -14,6 +14,9 @@ public class Game
     public int MaxParticipants { get; set; }
     public bool IsRecurring { get; set; } = false;
     public string? RecurrencePattern { get; set; } 
+    
+    public Guid? RecurrenceSeriesId { get; set; } 
+
     public string Status { get; set; } = "open"; 
     public bool IsPublic { get; set; } = true;
     public string? CancellationReason { get; set; }

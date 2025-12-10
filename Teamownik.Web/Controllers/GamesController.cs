@@ -28,11 +28,8 @@ public class GamesController : Controller
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToPage("/Identity/Account/Login");
-            }
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
 
             var games = await _gameService.GetUpcomingGamesAsync();
             return View(games);
@@ -45,42 +42,16 @@ public class GamesController : Controller
         }
     }
 
-    public async Task<IActionResult> Details(int id)
-    {
-        try
-        {
-            var game = await _gameService.GetGameByIdAsync(id);
-            if (game == null)
-            {
-                return NotFound();
-            }
-
-            return View(game);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Błąd podczas ładowania szczegółów gry");
-            TempData["Error"] = "Wystąpił błąd podczas ładowania szczegółów spotkania";
-            return RedirectToAction("Index", "Home");
-        }
-    }
+    public IActionResult Details(int id) => RedirectToAction(nameof(Manage), new { id });
 
     public async Task<IActionResult> Create()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                _logger.LogWarning("Create GET: User not authenticated");
-                return RedirectToPage("/Identity/Account/Login");
-            }
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
 
-            _logger.LogInformation($"Create GET: Loading form for user {userId}");
-            
             var userGroups = await _groupService.GetUserGroupsAsync(userId);
-            _logger.LogInformation($"Create GET: Found {userGroups.Count()} groups for user");
-            
             ViewBag.UserGroups = userGroups;
             return View();
         }
@@ -98,45 +69,25 @@ public class GamesController : Controller
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                _logger.LogWarning("Create POST: User not authenticated");
-                return RedirectToPage("/Identity/Account/Login");
-            }
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
 
             if (!ModelState.IsValid)
             {
-                var userGroups = await _groupService.GetUserGroupsAsync(userId);
-                ViewBag.UserGroups = userGroups;
+                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
                 return View(model);
             }
 
-            var localStartDateTime = model.GameDate.Date + model.StartTime;
-            var localEndDateTime = model.GameDate.Date + model.EndTime;
-            
-            TimeZoneInfo polandTimeZone;
-            try
+            var polandTimeZone = GetPolandTimeZone();
+            var startDateTime = TimeZoneInfo.ConvertTimeToUtc(model.GameDate.Date + model.StartTime, polandTimeZone);
+            var endDateTime = TimeZoneInfo.ConvertTimeToUtc(model.GameDate.Date + model.EndTime, polandTimeZone);
+
+            if ((startDateTime - DateTime.UtcNow).TotalMinutes < 60)
             {
-                polandTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+                ModelState.AddModelError("", "Nie można utworzyć spotkania na mniej niż 1 godzinę przed jego rozpoczęciem.");
+                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
+                return View(model);
             }
-            catch
-            {
-                try
-                {
-                    polandTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-                }
-                catch
-                {
-                    polandTimeZone = TimeZoneInfo.Local;
-                    _logger.LogWarning("Nie można znaleźć strefy czasowej Europe/Warsaw, używam lokalnej strefy czasowej");
-                }
-            }
-            
-            var startDateTime = TimeZoneInfo.ConvertTimeToUtc(localStartDateTime, polandTimeZone);
-            var endDateTime = TimeZoneInfo.ConvertTimeToUtc(localEndDateTime, polandTimeZone);
-            
-            _logger.LogInformation($"Tworzenie gry: Czas lokalny start: {localStartDateTime:yyyy-MM-dd HH:mm:ss}, UTC: {startDateTime:yyyy-MM-dd HH:mm:ss}");
 
             var game = new Game
             {
@@ -156,29 +107,159 @@ public class GamesController : Controller
                 CreatedAt = DateTime.UtcNow
             };
 
-            var createdGame = await _gameService.CreateGameAsync(game);
-            await _gameService.JoinGameAsync(createdGame.GameId, userId);
+            IEnumerable<Game> createdGames;
+            if (model.IsRecurring && !string.IsNullOrEmpty(model.RecurrencePattern))
+            {
+                createdGames = await _gameService.CreateRecurringGamesAsync(game);
+            }
+            else
+            {
+                createdGames = new[] { await _gameService.CreateGameAsync(game) };
+            }
 
-            TempData["Success"] = $"Spotkanie '{createdGame.GameName}' zostało utworzone!";
+            foreach (var createdGame in createdGames)
+            {
+                await _gameService.JoinGameAsync(createdGame.GameId, userId, 0);
+            }
+
+            var firstGame = createdGames.First();
+            TempData["Success"] = model.IsRecurring 
+                ? $"Utworzono serię {createdGames.Count()} cyklicznych spotkań '{firstGame.GameName}'!"
+                : $"Spotkanie '{firstGame.GameName}' zostało utworzone!";
+            
             return RedirectToAction("Index", "Home");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Błąd podczas tworzenia gry");
-            ModelState.AddModelError("", $"Wystąpił błąd podczas tworzenia spotkania: {ex.Message}");
+            ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia spotkania.");
             
-            try
+            var userId = GetUserId();
+            if (userId != null)
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    var userGroups = await _groupService.GetUserGroupsAsync(userId);
-                    ViewBag.UserGroups = userGroups;
-                }
+                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
             }
-            catch (Exception groupEx)
+            
+            return View(model);
+        }
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
+
+            var game = await _gameService.GetGameByIdAsync(id);
+            if (game == null)
             {
-                _logger.LogError(groupEx, "Błąd podczas ładowania grup");
+                TempData["Error"] = "Nie znaleziono spotkania";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (game.OrganizerId != userId)
+            {
+                TempData["Error"] = "Nie masz uprawnień do edycji tego spotkania";
+                return RedirectToAction(nameof(Manage), new { id });
+            }
+
+            var polandTimeZone = GetPolandTimeZone();
+            var localStart = TimeZoneInfo.ConvertTimeFromUtc(game.StartDateTime, polandTimeZone);
+            var localEnd = TimeZoneInfo.ConvertTimeFromUtc(game.EndDateTime, polandTimeZone);
+
+            var model = new EditGameViewModel
+            {
+                GameId = game.GameId,
+                GameName = game.GameName,
+                GameDate = localStart.Date,
+                StartTime = localStart.TimeOfDay,
+                EndTime = localEnd.TimeOfDay,
+                Location = game.Location,
+                Cost = game.Cost,
+                IsPaid = game.IsPaid,
+                MaxParticipants = game.MaxParticipants,
+                OnlyForGroup = game.GroupId.HasValue,
+                GroupId = game.GroupId,
+                IsPublic = game.IsPublic
+            };
+
+            ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas ładowania formularza edycji");
+            TempData["Error"] = "Wystąpił błąd podczas ładowania formularza edycji";
+            return RedirectToAction("Index", "Home");
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, EditGameViewModel model)
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
+
+            var game = await _gameService.GetGameByIdAsync(id);
+            if (game == null)
+            {
+                TempData["Error"] = "Nie znaleziono spotkania";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (game.OrganizerId != userId)
+            {
+                TempData["Error"] = "Nie masz uprawnień do edycji tego spotkania";
+                return RedirectToAction(nameof(Manage), new { id });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
+                return View(model);
+            }
+
+            var polandTimeZone = GetPolandTimeZone();
+            var startDateTime = TimeZoneInfo.ConvertTimeToUtc(model.GameDate.Date + model.StartTime, polandTimeZone);
+            var endDateTime = TimeZoneInfo.ConvertTimeToUtc(model.GameDate.Date + model.EndTime, polandTimeZone);
+
+            if ((startDateTime - DateTime.UtcNow).TotalMinutes < 60)
+            {
+                ModelState.AddModelError("", "Nie można edytować spotkania na czas mniejszy niż 1 godzina przed jego rozpoczęciem.");
+                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
+                return View(model);
+            }
+
+            game.GameName = model.GameName;
+            game.Location = model.Location;
+            game.StartDateTime = startDateTime;
+            game.EndDateTime = endDateTime;
+            game.Cost = model.IsPaid ? model.Cost : 0;
+            game.IsPaid = model.IsPaid;
+            game.MaxParticipants = model.MaxParticipants;
+            game.GroupId = model.OnlyForGroup ? model.GroupId : null;
+            game.IsPublic = model.IsPublic;
+
+            var result = await _gameService.UpdateGameAsync(game);
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Spotkanie zostało zaktualizowane" 
+                : "Nie udało się zaktualizować spotkania";
+
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas aktualizacji gry");
+            TempData["Error"] = "Wystąpił błąd podczas aktualizacji spotkania";
+            
+            var userId = GetUserId();
+            if (userId != null)
+            {
+                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
             }
             
             return View(model);
@@ -187,33 +268,52 @@ public class GamesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Join(int id)
+    public async Task<IActionResult> Join(int id, int guestsCount = 0)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
+
+            var game = await _gameService.GetGameByIdAsync(id);
+            if (game == null)
             {
-                return RedirectToPage("/Identity/Account/Login");
+                TempData["Error"] = "Nie znaleziono spotkania.";
+                return RedirectToAction("Index", "Home");
             }
 
-            var result = await _gameService.JoinGameAsync(id, userId);
+            if (await _gameService.IsUserParticipantAsync(id, userId))
+            {
+                TempData["Error"] = "Jesteś już zapisany na to spotkanie.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if ((game.StartDateTime - DateTime.UtcNow).TotalMinutes < 30)
+            {
+                TempData["Error"] = "Zapisy są zamknięte. Zapisy zamykają się pół godziny przed rozpoczęciem spotkania.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (game.Status == "cancelled")
+            {
+                TempData["Error"] = "To spotkanie zostało odwołane.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var availableSpots = await _gameService.GetAvailableSpotsAsync(id);
+            var totalSlotsNeeded = 1 + guestsCount;
+            var result = await _gameService.JoinGameAsync(id, userId, guestsCount);
             
             if (result)
             {
-                var game = await _gameService.GetGameByIdAsync(id);
-                if (game != null && game.Status == "full")
-                {
-                    TempData["Success"] = "Zostałeś dodany do listy rezerwowej!";
-                }
-                else
-                {
-                    TempData["Success"] = "Pomyślnie zapisano na spotkanie!";
-                }
+                var isReserve = availableSpots < totalSlotsNeeded;
+                TempData["Success"] = isReserve
+                    ? (guestsCount > 0 ? $"Ty i {guestsCount} gość(ci) zostaliście dodani do listy rezerwowej!" : "Zostałeś dodany do listy rezerwowej!")
+                    : (guestsCount > 0 ? $"Pomyślnie zapisano na spotkanie! (ty + {guestsCount} gość/gości)" : "Pomyślnie zapisano na spotkanie!");
             }
             else
             {
-                TempData["Error"] = "Nie udało się zapisać na spotkanie. Możliwe, że jesteś już zapisany.";
+                TempData["Error"] = "Nie udało się zapisać na spotkanie. Spróbuj ponownie.";
             }
             
             return RedirectToAction("Index", "Home");
@@ -228,26 +328,47 @@ public class GamesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateGuests(int id, int guestsCount)
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
+
+            if (guestsCount < 0)
+            {
+                TempData["Error"] = "Liczba gości nie może być ujemna.";
+                return RedirectToAction(nameof(Manage), new { id });
+            }
+
+            var result = await _gameService.UpdateGuestsCountAsync(id, userId, guestsCount);
+            TempData[result ? "Success" : "Error"] = result
+                ? (guestsCount > 0 ? $"Zaktualizowano liczbę gości: {guestsCount}" : "Usunięto gości z zapisu")
+                : "Nie można zaktualizować liczby gości - za mało wolnych miejsc";
+        
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas aktualizacji gości");
+            TempData["Error"] = "Wystąpił błąd podczas aktualizacji";
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Leave(int id)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToPage("/Identity/Account/Login");
-            }
+            var userId = GetUserId();
+            if (userId == null) return RedirectToLogin();
 
             var result = await _gameService.LeaveGameAsync(id, userId);
-            
-            if (result)
-            {
-                TempData["Success"] = "Pomyślnie wypisano ze spotkania!";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się wypisać ze spotkania.";
-            }
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Pomyślnie wypisano ze spotkania!" 
+                : "Nie udało się wypisać ze spotkania.";
             
             return RedirectToAction("Index", "Home");
         }
@@ -263,18 +384,8 @@ public class GamesController : Controller
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var game = await _gameService.GetGameByIdAsync(id);
-            
-            if (game == null)
-            {
-                return NotFound();
-            }
-            
-            if (game.OrganizerId != userId)
-            {
-                return Forbid();
-            }
+            if (game == null) return NotFound();
             
             return View(game);
         }
@@ -292,29 +403,16 @@ public class GamesController : Controller
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             var game = await _gameService.GetGameByIdAsync(id);
             
-            if (game == null)
-            {
-                return NotFound();
-            }
-            
-            if (game.OrganizerId != userId)
-            {
-                return Forbid();
-            }
+            if (game == null) return NotFound();
+            if (game.OrganizerId != userId) return Forbid();
             
             var result = await _gameService.CancelGameAsync(id, reason ?? "Brak powodu");
-            
-            if (result)
-            {
-                TempData["Success"] = "Spotkanie zostało odwołane";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się odwołać spotkania";
-            }
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Spotkanie zostało odwołane" 
+                : "Nie udało się odwołać spotkania";
             
             return RedirectToAction(nameof(Manage), new { id });
         }
@@ -332,31 +430,18 @@ public class GamesController : Controller
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = GetUserId();
             var game = await _gameService.GetGameByIdAsync(id);
             
-            if (game == null)
-            {
-                return NotFound();
-            }
-            
-            if (game.OrganizerId != userId)
-            {
-                return Forbid();
-            }
+            if (game == null) return NotFound();
+            if (game.OrganizerId != userId) return Forbid();
             
             var result = await _gameService.DeleteGameAsync(id);
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Spotkanie zostało usunięte" 
+                : "Nie udało się usunąć spotkania";
             
-            if (result)
-            {
-                TempData["Success"] = "Spotkanie zostało usunięte";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się usunąć spotkania";
-            }
-            
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Home");
         }
         catch (Exception ex)
         {
@@ -372,18 +457,11 @@ public class GamesController : Controller
     {
         try
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = GetUserId();
             var game = await _gameService.GetGameByIdAsync(id);
     
-            if (game == null)
-            {
-                return NotFound();
-            }
-    
-            if (game.OrganizerId != currentUserId)
-            {
-                return Forbid();
-            }
+            if (game == null) return NotFound();
+            if (game.OrganizerId != currentUserId) return Forbid();
     
             if (userId == game.OrganizerId)
             {
@@ -392,15 +470,9 @@ public class GamesController : Controller
             }
     
             var result = await _gameService.LeaveGameAsync(id, userId);
-    
-            if (result)
-            {
-                TempData["Success"] = "Uczestnik został usunięty";
-            }
-            else
-            {
-                TempData["Error"] = "Nie udało się usunąć uczestnika";
-            }
+            TempData[result ? "Success" : "Error"] = result 
+                ? "Uczestnik został usunięty" 
+                : "Nie udało się usunąć uczestnika";
     
             return RedirectToAction(nameof(Manage), new { id });
         }
@@ -409,6 +481,45 @@ public class GamesController : Controller
             _logger.LogError(ex, "Błąd podczas usuwania uczestnika");
             TempData["Error"] = "Wystąpił błąd podczas usuwania uczestnika";
             return RedirectToAction(nameof(Index));
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MakePublic(int id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var game = await _gameService.GetGameByIdAsync(id);
+
+            if (game == null) return NotFound();
+            if (game.OrganizerId != userId) return Forbid();
+
+            game.IsPublic = true;
+            await _gameService.UpdateGameAsync(game);
+
+            TempData["Success"] = "Spotkanie zostało upublicznione! Teraz widzą je wszyscy.";
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas upubliczniania gry");
+            TempData["Error"] = "Wystąpił błąd podczas zmiany statusu.";
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+    }
+
+    private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+    private IActionResult RedirectToLogin() => RedirectToPage("/Identity/Account/Login");
+    
+    private TimeZoneInfo GetPolandTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw"); }
+        catch
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time"); }
+            catch { return TimeZoneInfo.Local; }
         }
     }
 }
