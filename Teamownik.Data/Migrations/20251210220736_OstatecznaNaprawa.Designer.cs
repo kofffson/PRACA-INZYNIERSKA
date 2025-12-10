@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Teamownik.Data;
@@ -11,9 +12,11 @@ using Teamownik.Data;
 namespace Teamownik.Infrastructure.Migrations
 {
     [DbContext(typeof(TeamownikDbContext))]
-    partial class TeamownikDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251210220736_OstatecznaNaprawa")]
+    partial class OstatecznaNaprawa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
