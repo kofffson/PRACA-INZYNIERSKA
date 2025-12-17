@@ -82,12 +82,12 @@ public class GamesController : Controller
             var startDateTime = TimeZoneInfo.ConvertTimeToUtc(model.GameDate.Date + model.StartTime, polandTimeZone);
             var endDateTime = TimeZoneInfo.ConvertTimeToUtc(model.GameDate.Date + model.EndTime, polandTimeZone);
 
-            if ((startDateTime - DateTime.UtcNow).TotalMinutes < 60)
-            {
-                ModelState.AddModelError("", "Nie można utworzyć spotkania na mniej niż 1 godzinę przed jego rozpoczęciem.");
-                ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
-                return View(model);
-            }
+            // if ((startDateTime - DateTime.UtcNow).TotalMinutes < 60)
+            // {
+            //     ModelState.AddModelError("", "Nie można utworzyć spotkania na mniej niż 1 godzinę przed jego rozpoczęciem.");
+            //     ViewBag.UserGroups = await _groupService.GetUserGroupsAsync(userId);
+            //     return View(model);
+            // }
 
             var game = new Game
             {
@@ -288,7 +288,8 @@ public class GamesController : Controller
                 return RedirectToAction("Index", "Home");
             }
 
-            if ((game.StartDateTime - DateTime.UtcNow).TotalMinutes < 30)
+            // if ((game.StartDateTime - DateTime.UtcNow).TotalMinutes < 30)
+            if ((game.StartDateTime - DateTime.UtcNow).TotalMinutes < 0)
             {
                 TempData["Error"] = "Zapisy są zamknięte. Zapisy zamykają się pół godziny przed rozpoczęciem spotkania.";
                 return RedirectToAction("Index", "Home");

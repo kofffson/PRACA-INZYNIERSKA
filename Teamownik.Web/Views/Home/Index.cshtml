@@ -13,10 +13,10 @@ Layout = null;
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-        <style>
-         .card-organized {
-             border-left: 4px solid #198754 !important;
-         }
+    <style>
+        .card-organized {
+            border-left: 4px solid #198754 !important;
+        }
         .card-participating {
             border-left: 4px solid #0dcaf0 !important;
         }
@@ -34,31 +34,12 @@ Layout = null;
             border-left: 4px solid #6c757d !important;
         }
 
-        /* ✨ NOWE STYLE DLA LEPSZYCH ALERTÓW ✨ */
-        .custom-alert {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            min-width: 300px;
-            max-width: 500px;
-            z-index: 9999;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        .game-card-hidden {
+            display: none !important;
         }
 
-        @@keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .custom-alert .btn-close {
-            padding: 0.5rem;
+        .show-more-btn {
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -67,48 +48,6 @@ Layout = null;
 @await Html.PartialAsync("_Navbar")
 
 <div class="container" style="max-width: 900px;">
-
-    @* @if (TempData["Success"] != null) *@
-    @* { *@
-    @*     <div class="alert alert-success alert-dismissible fade show custom-alert border-0" role="alert"> *@
-    @*         <div class="d-flex align-items-start gap-2"> *@
-    @*             <i class="bi bi-check-circle-fill fs-4 mt-1"></i> *@
-    @*             <div class="flex-grow-1"> *@
-    @*                 <strong>Sukces!</strong><br> *@
-    @*                 @TempData["Success"] *@
-    @*             </div> *@
-    @*         </div> *@
-    @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
-    @*     </div> *@
-    @* } *@
-    @* *@
-    @* @if (TempData["Error"] != null) *@
-    @* { *@
-    @*     <div class="alert alert-danger alert-dismissible fade show custom-alert border-0" role="alert"> *@
-    @*         <div class="d-flex align-items-start gap-2"> *@
-    @*             <i class="bi bi-x-circle-fill fs-4 mt-1"></i> *@
-    @*             <div class="flex-grow-1"> *@
-    @*                 <strong>Błąd!</strong><br> *@
-    @*                 @TempData["Error"] *@
-    @*             </div> *@
-    @*         </div> *@
-    @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
-    @*     </div> *@
-    @* } *@
-    @* *@
-    @* @if (TempData["Warning"] != null) *@
-    @* { *@
-    @*     <div class="alert alert-warning alert-dismissible fade show custom-alert border-0" role="alert"> *@
-    @*         <div class="d-flex align-items-start gap-2"> *@
-    @*             <i class="bi bi-exclamation-triangle-fill fs-4 mt-1"></i> *@
-    @*             <div class="flex-grow-1"> *@
-    @*                 <strong>Uwaga!</strong><br> *@
-    @*                 @TempData["Warning"] *@
-    @*             </div> *@
-    @*         </div> *@
-    @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
-    @*     </div> *@
-    @* } *@
 
     <div class="mb-4">
         <div class="row g-3">
@@ -138,411 +77,458 @@ Layout = null;
             </div>
         </div>
     </div>
-    
+
     <div class="text-center mb-4">
         <a href="/Games/Create" class="btn btn-success rounded-pill px-3 py-2 fw-bold shadow-sm btn-create-game">
             <i class="bi bi-plus-circle-fill me-2 fs-5"></i>Nowe spotkanie
         </a>
     </div>
-    
+
     @if (Model.MyOrganizedGames?.Any() == true)
     {
-        <div class="bg-white p-3 shadow-sm mb-4 rounded-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h5 fw-bold mb-0">
-                    <i class="bi bi-star-fill text-success me-2"></i>Twoje spotkania (@Model.MyOrganizedGames.Count)
-                </h2>
-            </div>
-
-            @foreach (var game in Model.MyOrganizedGames)
-            {
-                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
-                    game.Status == "full" ? "bg-danger text-white" :
-                    "bg-secondary text-white";
-
-                <div class="card mb-3 shadow-sm border-0 card-organized">
-                    <div class="card-body position-relative">
-                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
-
-                        <h5 class="fw-bold mb-3">@game.GameName</h5>
-                
-                        <div class="d-flex align-items-center mb-2 small text-success fw-semibold">
-                            <i class="bi bi-star-fill me-2"></i>
-                            <span>Ty organizujesz</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
-                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
-                            <span>@game.Location</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-
-                        @if (game.Cost > 0)
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
-                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
-                                <span class="text-success">Darmowe</span>
-                            </div>
-                        }
-
-                        <a href="/Games/Manage/@game.GameId" class="btn btn-success w-100 rounded-3 fw-bold mt-3">
-                            <i class="bi bi-gear-fill me-2"></i>Zarządzaj
-                        </a>
-                    </div>
-                </div>
-            }
+    <div class="bg-white p-3 shadow-sm mb-4 rounded-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 fw-bold mb-0">
+                <i class="bi bi-star-fill text-success me-2"></i>Twoje spotkania (@Model.MyOrganizedGames.Count)
+            </h2>
         </div>
+
+        @for (int i = 0; i < Model.MyOrganizedGames.Count; i++)
+        {
+        var game = Model.MyOrganizedGames[i];
+        var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+        game.Status == "full" ? "bg-danger text-white" :
+        "bg-secondary text-white";
+
+        var hiddenClass = i >= 5 ? "game-card-hidden" : "";
+
+        <div class="card mb-3 shadow-sm border-0 card-organized organized-game @hiddenClass" data-section="organized">
+            <div class="card-body position-relative">
+                <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+
+                <h5 class="fw-bold mb-3">@game.GameName</h5>
+
+                <div class="d-flex align-items-center mb-2 small text-success fw-semibold">
+                    <i class="bi bi-star-fill me-2"></i>
+                    <span>Ty organizujesz</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                    <span>@game.Location</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                    <span>@game.ParticipantsText</span>
+                </div>
+
+                @if (game.Cost > 0)
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                </div>
+                }
+                else
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                    <span class="text-success">Darmowe</span>
+                </div>
+                }
+
+                <a href="/Games/Manage/@game.GameId" class="btn btn-success w-100 rounded-3 fw-bold mt-3">
+                    <i class="bi bi-gear-fill me-2"></i>Zarządzaj
+                </a>
+            </div>
+        </div>
+        }
+
+        @if (Model.MyOrganizedGames.Count > 5)
+        {
+        <div class="text-center mt-3">
+            <button class="btn btn-outline-success rounded-pill show-more-btn" data-target="organized">
+                <i class="bi bi-chevron-down me-2"></i>
+                <span class="btn-text">Pokaż więcej (@(Model.MyOrganizedGames.Count - 5))</span>
+            </button>
+        </div>
+        }
+    </div>
     }
 
     @if (Model.MyParticipatingGames?.Any() == true)
     {
-        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
-            <h2 class="h5 fw-bold mb-3">
-                <i class="bi bi-check-circle-fill text-info me-2"></i>Bierzesz udział (@Model.MyParticipatingGames.Count())
-            </h2>
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+        <h2 class="h5 fw-bold mb-3">
+            <i class="bi bi-check-circle-fill text-info me-2"></i>Bierzesz udział (@Model.MyParticipatingGames.Count())
+        </h2>
 
-            @foreach (var game in Model.MyParticipatingGames)
-            {
-                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
-                    game.Status == "full" ? "bg-danger text-white" :
-                    "bg-secondary text-white";
+        @for (int i = 0; i < Model.MyParticipatingGames.Count; i++)
+        {
+        var game = Model.MyParticipatingGames[i];
+        var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+        game.Status == "full" ? "bg-danger text-white" :
+        "bg-secondary text-white";
 
-                var cardClass = game.IsOnWaitlist ? "card-waitlist" : "card-participating";
+        var cardClass = game.IsOnWaitlist ? "card-waitlist" : "card-participating";
+        var hiddenClass = i >= 5 ? "game-card-hidden" : "";
 
-                <div class="card mb-3 shadow-sm border-0 @cardClass">
-                    <div class="card-body position-relative">
-                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+        <div class="card mb-3 shadow-sm border-0 @cardClass participating-game @hiddenClass" data-section="participating">
+            <div class="card-body position-relative">
+                <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
 
-                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+                <h5 class="fw-bold mb-3">@game.GameName</h5>
 
-                        @if (game.IsOnWaitlist)
-                        {
-                            <div class="d-flex align-items-center mb-2 small text-warning fw-semibold">
-                                <i class="bi bi-hourglass-split me-2"></i>
-                                <span>Lista rezerwowa</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="d-flex align-items-center mb-2 small text-info fw-semibold">
-                                <i class="bi bi-check-circle-fill me-2"></i>
-                                <span>Potwierdzony udział</span>
-                            </div>
-                        }
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
-                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
-                            <span>@game.Location</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-
-                        @if (game.Cost > 0)
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
-                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
-                                <span class="text-success">Darmowe</span>
-                            </div>
-                        }
-
-                        <div class="d-flex gap-2 mt-3">
-                            <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
-
-                            <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" class="flex-grow-1">
-                                @Html.AntiForgeryToken()
-                                <button class="btn @(game.IsOnWaitlist ? "btn-warning" : "btn-outline-danger") w-100 rounded-3 fw-semibold">
-                                    <i class="bi bi-x-circle me-1"></i>
-                                    @(game.IsOnWaitlist ? "Zrezygnuj z listy" : "Zrezygnuj")
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                @if (game.IsOnWaitlist)
+                {
+                <div class="d-flex align-items-center mb-2 small text-warning fw-semibold">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    <span>Lista rezerwowa</span>
                 </div>
-            }
+                }
+                else
+                {
+                <div class="d-flex align-items-center mb-2 small text-info fw-semibold">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span>Potwierdzony udział</span>
+                </div>
+                }
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                    <span>@game.Location</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                    <span>@game.ParticipantsText</span>
+                </div>
+
+                @if (game.Cost > 0)
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                </div>
+                }
+                else
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                    <span class="text-success">Darmowe</span>
+                </div>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
+
+                    <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@game.GameId" class="flex-grow-1">
+                        @Html.AntiForgeryToken()
+                        <button class="btn @(game.IsOnWaitlist ? "btn-warning" : "btn-outline-danger") w-100 rounded-3 fw-semibold">
+                            <i class="bi bi-x-circle me-1"></i>
+                            @(game.IsOnWaitlist ? "Zrezygnuj z listy" : "Zrezygnuj")
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
+        }
+
+        @if (Model.MyParticipatingGames.Count > 5)
+        {
+        <div class="text-center mt-3">
+            <button class="btn btn-outline-info rounded-pill show-more-btn" data-target="participating">
+                <i class="bi bi-chevron-down me-2"></i>
+                <span class="btn-text">Pokaż więcej (@(Model.MyParticipatingGames.Count - 5))</span>
+            </button>
+        </div>
+        }
+    </div>
     }
 
     @if (Model.MyGroupGames?.Any() == true)
     {
-        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
-            <h2 class="h5 fw-bold mb-3">
-                <i class="bi bi-people-fill text-primary me-2"></i>Spotkania Twojej Grupy (@Model.MyGroupGames.Count())
-            </h2>
-            <p class="small text-muted mb-3">Organizowane przez członków z Twojej grupy</p>
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+        <h2 class="h5 fw-bold mb-3">
+            <i class="bi bi-people-fill text-primary me-2"></i>Spotkania Twojej Grupy (@Model.MyGroupGames.Count())
+        </h2>
+        <p class="small text-muted mb-3">Organizowane przez członków z Twojej grupy</p>
 
-            @foreach (var game in Model.MyGroupGames)
-            {
-                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
-                    game.Status == "full" ? "bg-danger text-white" :
-                    "bg-secondary text-white";
+        @for (int i = 0; i < Model.MyGroupGames.Count; i++)
+        {
+        var game = Model.MyGroupGames[i];
+        var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+        game.Status == "full" ? "bg-danger text-white" :
+        "bg-secondary text-white";
 
-                var cardClass = game.IsFull ? "card-full" : "card-group";
+        var cardClass = game.IsFull ? "card-full" : "card-group";
+        var hiddenClass = i >= 5 ? "game-card-hidden" : "";
 
-                <div class="card mb-3 shadow-sm border-0 @cardClass">
-                    <div class="card-body position-relative">
-                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+        <div class="card mb-3 shadow-sm border-0 @cardClass group-game @hiddenClass" data-section="group">
+            <div class="card-body position-relative">
+                <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
 
-                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+                <h5 class="fw-bold mb-3">@game.GameName</h5>
 
-                        <div class="d-flex align-items-center mb-2 small @(game.IsFull ? "text-danger" : "text-primary") fw-semibold">
-                            <i class="bi bi-@(game.IsFull ? "x-circle-fill" : "people-fill") me-2"></i>
-                            <span>@(game.IsFull ? "Spotkanie zapełnione" : "Spotkanie z Twojej grupy")</span>
-                        </div>
+                <div class="d-flex align-items-center mb-2 small @(game.IsFull ? "text-danger" : "text-primary") fw-semibold">
+                    <i class="bi bi-@(game.IsFull ? "x-circle-fill" : "people-fill") me-2"></i>
+                    <span>@(game.IsFull ? "Spotkanie zapełnione" : "Spotkanie z Twojej grupy")</span>
+                </div>
 
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-person-fill text-info me-3" style="width: 20px;"></i>
-                            <span>Organizator: <strong>@game.OrganizerName</strong>
-                                @if (game.GroupName != null)
-                                {
-                                    <span class="badge bg-primary text-white rounded-pill small ms-1">@game.GroupName</span>
-                                }
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-person-fill text-info me-3" style="width: 20px;"></i>
+                    <span>Organizator: <strong>@game.OrganizerName</strong>
+                        @if (game.GroupName != null)
+                        {
+                        <span class="badge bg-primary text-white rounded-pill small ms-1">@game.GroupName</span>
+                        }
                             </span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
-                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
-                            <span>@game.Location</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-
-                        @if (game.Cost > 0)
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
-                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
-                                <span class="text-success">Darmowe</span>
-                            </div>
-                        }
-
-                        <div class="d-flex gap-2 mt-3">
-                            <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
-
-                            @if (!game.IsRegistrationClosed && !game.IsCancelled)
-                            {
-                                <button type="button" class="btn @(game.IsFull ? "btn-warning" : "btn-primary") rounded-3 fw-semibold flex-grow-1" 
-                                        data-bs-toggle="modal" data-bs-target="#joinModal@(game.GameId)">
-                                    <i class="bi bi-@(game.IsFull ? "hourglass-split" : "plus-circle-fill") me-1"></i>
-                                    @(game.IsFull ? "Lista rezerwowa" : "Zapisz się")
-                                </button>
-                            }
-                        </div>
-                    </div>
                 </div>
-        
-                <div class="modal fade" id="joinModal@(game.GameId)" tabindex="-1">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-4 p-3">
-                            <div class="modal-header border-0">
-                                <h5 class="modal-title fw-bold">Zapisz się na spotkanie</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form method="post" action="/Games/Join/@game.GameId">
-                                @Html.AntiForgeryToken()
-                                <div class="modal-body">
-                                    <p class="text-muted small mb-3">@game.GameName</p>
-                            
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">
-                                            <i class="bi bi-people-fill text-info me-2"></i>
-                                            Liczba gości (bez Ciebie)
-                                        </label>
-                                        <input type="number" name="guestsCount" class="form-control form-control-lg" 
-                                               value="0" min="0" max="10" />
-                                        <small class="text-muted">Osoby bez konta w aplikacji</small>
-                                    </div>
 
-                                    <div class="alert alert-info small mb-0">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Dostępne miejsca: <strong>@game.AvailableSpots</strong>
-                                    </div>
-                                </div>
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anuluj</button>
-                                    <button type="submit" class="btn btn-success">Potwierdź zapis</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
                 </div>
-            }
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                    <span>@game.Location</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                    <span>@game.ParticipantsText</span>
+                </div>
+
+                @if (game.Cost > 0)
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                </div>
+                }
+                else
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                    <span class="text-success">Darmowe</span>
+                </div>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
+
+                    @if (!game.IsRegistrationClosed && !game.IsCancelled)
+                    {
+                    <button type="button" class="btn @(game.IsFull ? "btn-warning" : "btn-primary") rounded-3 fw-semibold flex-grow-1"
+                            data-bs-toggle="modal" data-bs-target="#joinModal@(game.GameId)">
+                        <i class="bi bi-@(game.IsFull ? "hourglass-split" : "plus-circle-fill") me-1"></i>
+                        @(game.IsFull ? "Lista rezerwowa" : "Zapisz się")
+                    </button>
+                    }
+                </div>
+            </div>
         </div>
+
+        <div class="modal fade" id="joinModal@(game.GameId)" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 p-3">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold">Zapisz się na spotkanie</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="post" action="/Games/Join/@game.GameId">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-body">
+                            <p class="text-muted small mb-3">@game.GameName</p>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-people-fill text-info me-2"></i>
+                                    Liczba gości (bez Ciebie)
+                                </label>
+                                <input type="number" name="guestsCount" class="form-control form-control-lg bg-light border-0 rounded-pill" min="0" max="10" placeholder="Podaj" value=""/>
+                                <small class="text-muted">Osoby bez konta w aplikacji</small>
+                            </div>
+
+                            <div class="alert alert-info small mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Dostępne miejsca: <strong>@game.AvailableSpots</strong>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anuluj</button>
+                            <button type="submit" class="btn btn-success">Potwierdź zapis</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if (Model.MyGroupGames.Count > 5)
+        {
+        <div class="text-center mt-3">
+            <button class="btn btn-outline-primary rounded-pill show-more-btn" data-target="group">
+                <i class="bi bi-chevron-down me-2"></i>
+                <span class="btn-text">Pokaż więcej (@(Model.MyGroupGames.Count - 5))</span>
+            </button>
+        </div>
+        }
+    </div>
     }
 
     @if (Model.PublicGames?.Any() == true)
     {
-        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
-            <h2 class="h5 fw-bold mb-3">
-                <i class="bi bi-globe text-secondary me-2"></i>Pozostałe dostępne (@Model.PublicGames.Count())
-            </h2>
-            <p class="small text-muted mb-3">Otwarte publicznie w Twojej okolicy</p>
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+        <h2 class="h5 fw-bold mb-3">
+            <i class="bi bi-globe text-secondary me-2"></i>Pozostałe dostępne (@Model.PublicGames.Count())
+        </h2>
+        <p class="small text-muted mb-3">Otwarte publicznie w Twojej okolicy</p>
 
-            @foreach (var game in Model.PublicGames)
-            {
-                var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
-                    game.Status == "full" ? "bg-danger text-white" :
-                    "bg-secondary text-white";
+        @for (int i = 0; i < Model.PublicGames.Count; i++)
+        {
+        var game = Model.PublicGames[i];
+        var statusBadgeClass = game.Status == "open" ? "bg-success text-white" :
+        game.Status == "full" ? "bg-danger text-white" :
+        "bg-secondary text-white";
 
-                var cardClass = game.IsFull ? "card-full" : "card-public";
+        var cardClass = game.IsFull ? "card-full" : "card-public";
+        var hiddenClass = i >= 5 ? "game-card-hidden" : "";
 
-                <div class="card mb-3 shadow-sm border-0 @cardClass">
-                    <div class="card-body position-relative">
-                        <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
+        <div class="card mb-3 shadow-sm border-0 @cardClass public-game @hiddenClass" data-section="public">
+            <div class="card-body position-relative">
+                <span class="badge position-absolute top-0 end-0 m-3 @statusBadgeClass">@game.StatusBadgeText</span>
 
-                        <h5 class="fw-bold mb-3">@game.GameName</h5>
+                <h5 class="fw-bold mb-3">@game.GameName</h5>
 
-                        <div class="d-flex align-items-center mb-2 small @(game.IsFull ? "text-danger" : "text-secondary") fw-semibold">
-                            <i class="bi bi-@(game.IsFull ? "x-circle-fill" : "globe") me-2"></i>
-                            <span>@(game.IsFull ? "Spotkanie zapełnione" : "Spotkanie publiczne")</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-person-fill text-info me-3" style="width: 20px;"></i>
-                            <span>Organizator: <strong>@game.OrganizerName</strong></span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
-                            <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
-                            <span>@game.Location</span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
-                            <span>@game.ParticipantsText</span>
-                        </div>
-
-                        @if (game.Cost > 0)
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
-                                <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
-                                <span class="text-success">Darmowe</span>
-                            </div>
-                        }
-
-                        <div class="d-flex gap-2 mt-3">
-                            <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
-
-                            @if (!game.IsRegistrationClosed && !game.IsCancelled)
-                            {
-                                <button type="button" class="btn @(game.IsFull ? "btn-warning" : "btn-success") rounded-3 fw-semibold flex-grow-1" 
-                                        data-bs-toggle="modal" data-bs-target="#joinModal@(game.GameId)">
-                                    <i class="bi bi-@(game.IsFull ? "hourglass-split" : "plus-circle-fill") me-1"></i>
-                                    @(game.IsFull ? "Lista rezerwowa" : "Zapisz się")
-                                </button>
-                            }
-                        </div>
-                    </div>
+                <div class="d-flex align-items-center mb-2 small @(game.IsFull ? "text-danger" : "text-secondary") fw-semibold">
+                    <i class="bi bi-@(game.IsFull ? "x-circle-fill" : "globe") me-2"></i>
+                    <span>@(game.IsFull ? "Spotkanie zapełnione" : "Spotkanie publiczne")</span>
                 </div>
-        
-                <div class="modal fade" id="joinModal@(game.GameId)" tabindex="-1">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-4 p-3">
-                            <div class="modal-header border-0">
-                                <h5 class="modal-title fw-bold">Zapisz się na spotkanie</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form method="post" action="/Games/Join/@game.GameId">
-                                @Html.AntiForgeryToken()
-                                <div class="modal-body">
-                                    <p class="text-muted small mb-3">@game.GameName</p>
-                            
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">
-                                            <i class="bi bi-people-fill text-info me-2"></i>
-                                            Liczba gości (bez Ciebie)
-                                        </label>
-                                        <input type="number" name="guestsCount" class="form-control form-control-lg" 
-                                               value="0" min="0" max="10" />
-                                        <small class="text-muted">Osoby bez konta w aplikacji</small>
-                                    </div>
 
-                                    <div class="alert alert-info small mb-0">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Dostępne miejsca: <strong>@game.AvailableSpots</strong>
-                                    </div>
-                                </div>
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anuluj</button>
-                                    <button type="submit" class="btn btn-success">Potwierdź zapis</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-person-fill text-info me-3" style="width: 20px;"></i>
+                    <span>Organizator: <strong>@game.OrganizerName</strong></span>
                 </div>
-            }
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-fill text-primary me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold text-primary">@game.FormattedDateTime</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-geo-alt-fill text-danger me-3" style="width: 20px;"></i>
+                    <span>@game.Location</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-people-fill text-success me-3" style="width: 20px;"></i>
+                    <span>@game.ParticipantsText</span>
+                </div>
+
+                @if (game.Cost > 0)
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-warning me-3" style="width: 20px;"></i>
+                    <span class="fw-semibold">@game.Cost.ToString("0.00") zł</span>
+                </div>
+                }
+                else
+                {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card-fill text-success me-3" style="width: 20px;"></i>
+                    <span class="text-success">Darmowe</span>
+                </div>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/Games/Details/@game.GameId" class="btn btn-outline-secondary rounded-3 flex-grow-1">Szczegóły</a>
+
+                    @if (!game.IsRegistrationClosed && !game.IsCancelled)
+                    {
+                    <button type="button" class="btn @(game.IsFull ? "btn-warning" : "btn-success") rounded-3 fw-semibold flex-grow-1"
+                            data-bs-toggle="modal" data-bs-target="#joinModal@(game.GameId)">
+                        <i class="bi bi-@(game.IsFull ? "hourglass-split" : "plus-circle-fill") me-1"></i>
+                        @(game.IsFull ? "Lista rezerwowa" : "Zapisz się")
+                    </button>
+                    }
+                </div>
+            </div>
         </div>
+
+        <div class="modal fade" id="joinModal@(game.GameId)" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 p-3">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold">Zapisz się na spotkanie</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="post" action="/Games/Join/@game.GameId">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-body">
+                            <p class="text-muted small mb-3">@game.GameName</p>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-people-fill text-info me-2"></i>
+                                    Liczba gości (bez Ciebie)
+                                </label>
+                                <input type="number" name="guestsCount" class="form-control form-control-lg bg-light border-0 rounded-pill" min="0" max="10" placeholder="Podaj liczbę gości" value=""/>
+                                <small class="text-muted">Osoby bez konta w aplikacji</small>
+                            </div>
+
+                            <div class="alert alert-info small mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Dostępne miejsca: <strong>@game.AvailableSpots</strong>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anuluj</button>
+                            <button type="submit" class="btn btn-success">Potwierdź zapis</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if (Model.PublicGames.Count > 5)
+        {
+        <div class="text-center mt-3">
+            <button class="btn btn-outline-secondary rounded-pill show-more-btn" data-target="public">
+                <i class="bi bi-chevron-down me-2"></i>
+                <span class="btn-text">Pokaż więcej (@(Model.PublicGames.Count - 5))</span>
+            </button>
+        </div>
+        }
+    </div>
     }
 
-    @if ((Model.MyOrganizedGames?.Any() != true) && 
-         (Model.MyParticipatingGames?.Any() != true) && 
-         (Model.MyGroupGames?.Any() != true) && 
-         (Model.PublicGames?.Any() != true))
+    @if ((Model.MyOrganizedGames?.Any() != true) &&
+    (Model.MyParticipatingGames?.Any() != true) &&
+    (Model.MyGroupGames?.Any() != true) &&
+    (Model.PublicGames?.Any() != true))
     {
-        <div class="card bg-white text-center mt-4 border-0 shadow-sm p-4">
-            <i class="bi bi-calendar-x display-1 text-muted opacity-25"></i>
-            <h5 class="mb-2 mt-3">Brak dostępnych spotkań</h5>
-            <p class="mb-3 small text-muted">Dołącz do grupy lub utwórz własne spotkanie!</p>
-            <a href="/Games/Create" class="btn btn-success rounded-pill px-4 fw-semibold">
-                <i class="bi bi-plus-circle-fill me-2"></i>Utwórz spotkanie
-            </a>
-        </div>
+    <div class="card bg-white text-center mt-4 border-0 shadow-sm p-4">
+        <i class="bi bi-calendar-x display-1 text-muted opacity-25"></i>
+        <h5 class="mb-2 mt-3">Brak dostępnych spotkań</h5>
+        <p class="mb-3 small text-muted">Dołącz do grupy lub utwórz własne spotkanie!</p>
+        <a href="/Games/Create" class="btn btn-success rounded-pill px-4 fw-semibold">
+            <i class="bi bi-plus-circle-fill me-2"></i>Utwórz spotkanie
+        </a>
+    </div>
     }
 
 </div>
@@ -550,69 +536,97 @@ Layout = null;
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
     @if (TempData["Success"] != null)
     {
-        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <strong>Sukces!</strong> @TempData["Success"]
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Sukces!</strong> @TempData["Success"]
             </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
+    </div>
     }
-    
+
     @if (TempData["Error"] != null)
     {
-        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-x-circle-fill me-2"></i>
-                    <strong>Błąd!</strong> @TempData["Error"]
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                <strong>Błąd!</strong> @TempData["Error"]
             </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
+    </div>
     }
-    
+
     @if (TempData["Warning"] != null)
     {
-        <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>Uwaga!</strong> @TempData["Warning"]
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Uwaga!</strong> @TempData["Warning"]
             </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
+    </div>
     }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     const alerts = document.querySelectorAll('.custom-alert');
-    //     alerts.forEach(function(alert) {
-    //         setTimeout(function() {
-    //             const bsAlert = bootstrap.Alert.getInstance(alert) || new bootstrap.Alert(alert);
-    //             bsAlert.close();
-    //         }, 8000);
-    //     });
-    // });
     document.addEventListener('DOMContentLoaded', function() {
         var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-
         var toastList = toastElList.map(function(toastEl) {
             return new bootstrap.Toast(toastEl, {
-                autohide: true,  
-                delay: 6000    
+                autohide: true,
+                delay: 6000
             });
         });
-
         toastList.forEach(function(toast) {
             toast.show();
+        });
+
+        const showMoreButtons = document.querySelectorAll('.show-more-btn');
+
+        showMoreButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const target = this.getAttribute('data-target');
+                const allCards = document.querySelectorAll(`.${target}-game`);
+                const icon = this.querySelector('i');
+                const btnText = this.querySelector('.btn-text');
+
+                const isExpanded = icon.classList.contains('bi-chevron-up');
+
+                if (isExpanded) {
+                    allCards.forEach((card, index) => {
+                        if (index >= 5) {
+                            card.classList.add('game-card-hidden');
+                        }
+                    });
+
+                    icon.classList.remove('bi-chevron-up');
+                    icon.classList.add('bi-chevron-down');
+                    
+                    const hiddenCount = allCards.length - 5;
+                    btnText.textContent = `Pokaż więcej (${hiddenCount})`;
+
+                    const section = this.closest('.bg-white');
+                    if (section) {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    allCards.forEach(card => {
+                        card.classList.remove('game-card-hidden');
+                    });
+
+                    icon.classList.remove('bi-chevron-down');
+                    icon.classList.add('bi-chevron-up');
+                    btnText.textContent = 'Pokaż mniej';
+                }
+            });
         });
     });
 </script>

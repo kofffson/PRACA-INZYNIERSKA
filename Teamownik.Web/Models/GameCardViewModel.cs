@@ -1,5 +1,4 @@
 ﻿using System;
-using Teamownik.Web.Helpers;
 
 namespace Teamownik.Web.Models
 {
@@ -35,7 +34,8 @@ namespace Teamownik.Web.Models
             get
             {
                 var timeUntilStart = StartDateTime - DateTime.UtcNow;
-                return timeUntilStart.TotalMinutes < 30;
+                // return timeUntilStart.TotalMinutes < 30;
+                return timeUntilStart.TotalMinutes < 0;
             }
         }
         
@@ -106,8 +106,9 @@ namespace Teamownik.Web.Models
         {
             get
             {
-                var localStart = TimeZoneHelper.ToLocalTime(StartDateTime);
-                var localEnd = TimeZoneHelper.ToLocalTime(EndDateTime);
+                var polandZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+                var localStart = TimeZoneInfo.ConvertTimeFromUtc(StartDateTime, polandZone);
+                var localEnd = TimeZoneInfo.ConvertTimeFromUtc(EndDateTime, polandZone);
                 
                 if (IsRecurring && !string.IsNullOrEmpty(RecurrencePattern))
                 {

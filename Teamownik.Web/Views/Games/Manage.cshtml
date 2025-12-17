@@ -20,7 +20,12 @@
     var isFull = totalSlotsOccupied >= Model.MaxParticipants;
 
     var timeUntilStart = Model.StartDateTime - DateTime.UtcNow;
-    var isRegistrationClosed = timeUntilStart.TotalMinutes < 30;
+    // var isRegistrationClosed = timeUntilStart.TotalMinutes < 30;
+    var isRegistrationClosed = timeUntilStart.TotalMinutes < 0;
+    var polandZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+    var localStartDateTime = TimeZoneInfo.ConvertTimeFromUtc(Model.StartDateTime, polandZone);
+    var localEndDateTime = TimeZoneInfo.ConvertTimeFromUtc(Model.EndDateTime, polandZone);
+
 }
 <!DOCTYPE html>
 <html lang="pl" data-bs-theme="light">
@@ -118,10 +123,10 @@
         <i class="bi bi-geo-alt-fill text-info me-1"></i> 
         <span>@Model.Location</span>
     </div>
-
+    
     <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-        <i class="bi bi-calendar-fill text-info me-1"></i> 
-        <span>@Model.StartDateTime.ToLocalTime().ToString("dd.MM.yyyy • HH:mm")</span>
+        <i class="bi bi-calendar-fill text-info me-1"></i>
+        <span>@localStartDateTime.ToString("dd.MM.yyyy") • @localStartDateTime.ToString("HH:mm")-@localEndDateTime.ToString("HH:mm")</span>
     </div>
 
     <div class="d-flex align-items-center gap-2 py-1 text-secondary small">

@@ -87,31 +87,26 @@ public class HomeController : Controller
         {
             var now = DateTime.UtcNow.AddMinutes(-5);
 
-            // Gry organizowane
             var organizedGames = await _gameService.GetGamesByOrganizerAsync(userId);
             var upcomingOrganized = organizedGames
                 .Where(g => g.StartDateTime > now && g.Status != "cancelled")
-                .OrderBy(g => g.StartDateTime)
-                .Take(5);
+                .OrderBy(g => g.StartDateTime);
 
             foreach (var game in upcomingOrganized)
             {
                 model.MyOrganizedGames.Add(await MapToGameCardViewModel(game, userId));
             }
 
-            // Gry uczestnictwa
             var participatingGames = await _gameService.GetGamesByParticipantAsync(userId);
             var upcomingParticipating = participatingGames
                 .Where(g => g.OrganizerId != userId && g.StartDateTime > now && g.Status != "cancelled")
-                .OrderBy(g => g.StartDateTime)
-                .Take(5);
+                .OrderBy(g => g.StartDateTime);
 
             foreach (var game in upcomingParticipating)
             {
                 model.MyParticipatingGames.Add(await MapToGameCardViewModel(game, userId));
             }
 
-            // Gry grupowe
             var userGroups = await _groupService.GetUserGroupsAsync(userId);
             var groupIds = userGroups.Select(g => g.GroupId).ToList();
 
@@ -125,7 +120,6 @@ public class HomeController : Controller
                     && g.OrganizerId != userId
                     && !g.Participants.Any(p => p.UserId == userId))
                 .OrderBy(g => g.StartDateTime)
-                .Take(5)
                 .ToListAsync();
 
             foreach (var game in groupGames)
@@ -135,7 +129,6 @@ public class HomeController : Controller
                 model.MyGroupGames.Add(cardModel);
             }
 
-            // Gry publiczne
             var publicGames = await _context.Games
                 .Include(g => g.Organizer)
                 .Include(g => g.Participants)
@@ -146,7 +139,6 @@ public class HomeController : Controller
                     && !groupIds.Contains(g.GroupId ?? 0)
                     && !g.Participants.Any(p => p.UserId == userId))
                 .OrderBy(g => g.StartDateTime)
-                .Take(3)
                 .ToListAsync();
 
             foreach (var game in publicGames)
@@ -160,7 +152,6 @@ public class HomeController : Controller
         }
     }
 
-    // ✅ ZOPTYMALIZOWANE - dane z pamięci zamiast 3 zapytań
     private async Task<GameCardViewModel> MapToGameCardViewModel(Game game, string userId)
     {
         var totalSlotsOccupied = await _gameService.GetTotalSlotsOccupiedAsync(game.GameId);

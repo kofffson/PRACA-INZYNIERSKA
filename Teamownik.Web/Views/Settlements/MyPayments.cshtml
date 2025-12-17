@@ -1,0 +1,263 @@
+﻿@model Teamownik.Web.Models.SettlementsViewModel
+@{
+    ViewData["Title"] = "Moje płatności";
+    Layout = null;
+    
+    var currentYear = DateTime.Now.Year;
+    var currentMonth = DateTime.Now.Month;
+}
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+
+<body class="bg-light" style="padding-top: 66px; padding-bottom: 80px;">
+
+@await Html.PartialAsync("_Navbar")
+
+<div class="container" style="max-width: 900px;">
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-3 position-sticky" style="top: 66px; z-index: 1020;">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/" class="text-decoration-none fs-4 text-dark">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="fw-bold fs-5 text-dark">Moje płatności</div>
+        </div>
+    </div>
+
+    <div class="bg-white p-4 shadow-sm mb-3 rounded-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-calendar-month text-info me-2"></i>
+                @Model.CurrentMonthName
+            </h5>
+        </div>
+        
+        <div class="row g-3 mb-3">
+            <div class="col-6">
+                <div class="text-center p-3 bg-danger bg-opacity-10 rounded-3">
+                    <div class="fs-4 fw-bold text-danger">@Model.TotalToPay.ToString("0.00") zł</div>
+                    <small class="text-muted">Do zapłaty</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="text-center p-3 bg-success bg-opacity-10 rounded-3">
+                    <div class="fs-4 fw-bold text-success">@Model.TotalPaidThisMonth.ToString("0.00") zł</div>
+                    <small class="text-muted">Zapłacono</small>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.MonthlyBreakdown != null)
+        {
+            var totalMonthAmount = Model.MonthlyBreakdown.TotalAmount;
+            var paidMonthAmount = Model.MonthlyBreakdown.PaidAmount;
+            var unpaidMonthAmount = Model.MonthlyBreakdown.UnpaidAmount;
+            var completionPercentage = totalMonthAmount > 0 ? (paidMonthAmount / totalMonthAmount) * 100 : 0;
+
+            <div class="mt-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="small text-muted">Postęp płatności w tym miesiącu</span>
+                    <span class="small fw-bold">@completionPercentage.ToString("0.0")%</span>
+                </div>
+                <div class="progress" style="height: 20px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: @completionPercentage%">
+                    </div>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">
+                        Razem w @Model.CurrentMonthName: <strong>@totalMonthAmount.ToString("0.00") zł</strong> 
+                        (@Model.MonthlyBreakdown.PaymentsCount płatności)
+                    </small>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                <a href="?year=@(currentMonth == 1 ? currentYear - 1 : currentYear)&month=@(currentMonth == 1 ? 12 : currentMonth - 1)" 
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-chevron-left"></i> Poprzedni
+                </a>
+                <span class="fw-bold">@Model.CurrentMonthName</span>
+                <a href="?year=@(currentMonth == 12 ? currentYear + 1 : currentYear)&month=@(currentMonth == 12 ? 1 : currentMonth + 1)" 
+                   class="btn btn-outline-secondary btn-sm">
+                    Następny <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (Model.PaymentsToMake.Any())
+    {
+        <div class="bg-white p-3 shadow-sm mb-3 rounded-4">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                Do zapłaty (@Model.PaymentsToMake.Count)
+            </h5>
+
+            @foreach (var payment in Model.PaymentsToMake)
+            {
+                <div class="card mb-3 shadow-sm border-0 @(payment.IsOverdue ? "border-start border-danger border-3" : "")">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-1">@payment.Title</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    @payment.Date.ToString("dd.MM.yyyy HH:mm")
+                                </small>
+                            </div>
+                            <span class="badge @(payment.IsOverdue ? "bg-danger" : "bg-warning")">
+                                @(payment.IsOverdue ? "Zaległość" : "Oczekuje")
+                            </span>
+                        </div>
+
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Odbiorca:</small>
+                            <strong>@payment.RecipientName</strong>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(payment.BankAccountNumber) && payment.BankAccountNumber != "Brak numeru konta")
+                        {
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Numer telefonu (BLIK):</small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <code class="bg-light p-2 rounded flex-grow-1 small">@payment.BankAccountNumber</code>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('@payment.BankAccountNumber')">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Kwota do zapłaty:</small>
+                            <div class="fs-4 fw-bold text-danger">@payment.Amount.ToString("0.00") zł</div>
+                        </div>
+
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                Termin: @payment.DueDate.ToString("dd.MM.yyyy")
+                                @if (payment.IsOverdue)
+                                {
+                                    <span class="text-danger fw-bold">(Przeterminowane!)</span>
+                                }
+                            </small>
+                        </div>
+
+                        <form method="post" asp-action="MarkAsPaid" asp-route-id="@payment.SettlementId" class="mt-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="paymentMethod" value="bank_transfer" />
+                            <button type="submit" class="btn btn-success w-100 fw-semibold">
+                                <i class="bi bi-check-circle me-2"></i>Oznacz jako zapłacone
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="bg-white p-5 shadow-sm mb-3 rounded-4 text-center">
+            <i class="bi bi-check-circle-fill fs-1 text-success opacity-50"></i>
+            <h5 class="mt-3">Brak zaległych płatności</h5>
+            <p class="text-muted">Świetnie! Jesteś na bieżąco z rozliczeniami.</p>
+        </div>
+    }
+
+    <!-- Historia płatności -->
+    @if (Model.PaidHistory.Any())
+    {
+        <div class="bg-white p-3 shadow-sm rounded-4">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-clock-history text-success me-2"></i>
+                Historia płatności (ostatnie 10)
+            </h5>
+
+            @foreach (var payment in Model.PaidHistory)
+            {
+                <div class="card mb-2 bg-success bg-opacity-10 shadow-sm border-0">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">@payment.Title</div>
+                                <small class="text-muted">
+                                    @payment.RecipientName
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-success">@payment.Amount.ToString("0.00") zł</div>
+                                <small class="text-muted">
+                                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                    @payment.PaidAt?.ToString("dd.MM.yyyy")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
+    @if (TempData["Success"] != null)
+    {
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <strong>Sukces!</strong> @TempData["Success"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Błąd!</strong> @TempData["Error"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // function copyToClipboard(text) {
+    //     navigator.clipboard.writeText(text).then(function() {
+    //         alert('Numer konta skopiowany do schowka!');
+    //     }, function(err) {
+    //         alert('Nie udało się skopiować');
+    //     });
+    // }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 6000
+            });
+        });
+        toastList.forEach(function(toast) {
+            toast.show();
+        });
+    });
+</script>
+</body>
+</html>

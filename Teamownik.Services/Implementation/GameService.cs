@@ -121,7 +121,9 @@ public class GameService : IGameService
         if (game == null) return false;
 
         var timeUntilStart = game.StartDateTime - DateTime.UtcNow;
-        if (timeUntilStart.TotalMinutes < 30)
+        //if (timeUntilStart.TotalMinutes < 30) 
+            if (timeUntilStart.TotalMinutes < 0)
+
         {
             _logger.LogWarning(
                 "Próba zapisu na spotkanie {GameId} za mniej niż 30 minut przed startem. Pozostało: {Minutes:F1} minut",
@@ -451,12 +453,19 @@ public class GameService : IGameService
     {
         try
         {
-            var cutoffDate = DateTime.UtcNow.AddDays(-1);
+            // var cutoffDate = DateTime.UtcNow.AddDays(-1);
+            //
+            // var oldGames = await _context.Games
+            //     .Where(g => g.EndDateTime < cutoffDate && 
+            //                g.Status != "cancelled" && 
+            //                g.Status != "completed")
+            //     .ToListAsync();
+            var cutoffDate = DateTime.UtcNow.AddMinutes(-2); 
     
             var oldGames = await _context.Games
-                .Where(g => g.EndDateTime < cutoffDate && 
-                           g.Status != "cancelled" && 
-                           g.Status != "completed")
+                .Where(g => g.StartDateTime < cutoffDate &&    
+                            g.Status != "cancelled" && 
+                            g.Status != "completed")
                 .ToListAsync();
 
             if (!oldGames.Any())

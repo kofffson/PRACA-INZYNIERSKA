@@ -6,7 +6,9 @@ public class GameCleanupHostedService : BackgroundService
 {
     private readonly ILogger<GameCleanupHostedService> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly TimeSpan _interval = TimeSpan.FromHours(1); 
+    //private readonly TimeSpan _interval = TimeSpan.FromHours(1); 
+    private readonly TimeSpan _interval = TimeSpan.FromMinutes(1); 
+
 
     public GameCleanupHostedService(
         ILogger<GameCleanupHostedService> logger,
