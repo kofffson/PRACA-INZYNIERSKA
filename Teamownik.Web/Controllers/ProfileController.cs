@@ -21,13 +21,11 @@ public class ProfileController : Controller
         _logger = logger;
     }
 
-    // GET: /Profile
     public async Task<IActionResult> Index()
     {
         var user = await GetCurrentUserAsync();
         if (user == null) return RedirectToLogin();
 
-        // Mapuj ApplicationUser -> ProfileViewModel
         var model = new ProfileViewModel
         {
             FirstName = user.FirstName,
@@ -37,7 +35,6 @@ public class ProfileController : Controller
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,
             
-            // Opcjonalnie - statystyki (jeśli chcesz je pokazać)
             TotalGamesPlayed = user.GameParticipations?.Count ?? 0,
             TotalGamesOrganized = user.OrganizedGames?.Count ?? 0,
             ActiveGroupsCount = user.GroupMemberships?.Count ?? 0
@@ -46,7 +43,6 @@ public class ProfileController : Controller
         return View(model);
     }
 
-    // GET: /Profile/Edit
     public async Task<IActionResult> Edit()
     {
         var user = await GetCurrentUserAsync();
@@ -63,7 +59,6 @@ public class ProfileController : Controller
         return View(model);
     }
 
-    // POST: /Profile/Edit
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditProfileViewModel model)
