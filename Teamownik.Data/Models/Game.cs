@@ -9,10 +9,10 @@ public class Game
     public string Location { get; set; } = string.Empty;
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
-    public decimal Cost { get; set; } = 0;
-    public bool IsPaid { get; set; } = false;
+    public decimal Cost { get; set; }
+    public bool IsPaid { get; set; }
     public int MaxParticipants { get; set; }
-    public bool IsRecurring { get; set; } = false;
+    public bool IsRecurring { get; set; }
     public string? RecurrencePattern { get; set; } 
     
     public Guid? RecurrenceSeriesId { get; set; } 

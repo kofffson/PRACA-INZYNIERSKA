@@ -15,13 +15,11 @@ public interface ISettlementService
     Task<IEnumerable<Settlement>> GetUserReceivablesAsync(string userId, bool onlyUnpaid = false);
     Task<Settlement?> GetSettlementByIdAsync(int settlementId);
     
-    // Rozliczenia zbiorcze użytkownika
     Task<decimal> GetTotalToPayAsync(string userId);
     Task<decimal> GetTotalToReceiveAsync(string userId);
     Task<decimal> GetPaidThisMonthAsync(string userId);
     Task<Dictionary<string, decimal>> GetMonthlyPaymentSummaryAsync(string userId, int year, int month);
     
-    // Rozliczenia dla organizatora gry
     Task<IEnumerable<Settlement>> GetSettlementsForGameAsync(int gameId);
     Task<GameSettlementSummary> GetGameSettlementSummaryAsync(int gameId);
     

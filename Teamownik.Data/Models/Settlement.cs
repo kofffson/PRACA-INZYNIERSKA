@@ -8,7 +8,7 @@ public class Settlement
     public string RecipientId { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public string? BankAccountNumber { get; set; }
-    public bool IsPaid { get; set; } = false;
+    public bool IsPaid { get; set; }
     public DateTime DueDate { get; set; }
     public DateTime? PaidAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

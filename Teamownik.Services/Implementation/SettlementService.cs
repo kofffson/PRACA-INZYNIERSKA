@@ -30,7 +30,6 @@ public class SettlementService : ISettlementService
             if (game == null || !game.IsPaid || game.Cost <= 0)
                 return Enumerable.Empty<Settlement>();
 
-            // Sprawdź czy już istnieją rozliczenia
             var existingSettlements = await _context.Settlements
                 .Where(s => s.GameId == gameId)
                 .ToListAsync();
@@ -46,7 +45,7 @@ public class SettlementService : ISettlementService
             foreach (var participant in confirmedParticipants)
             {
                 if (participant.UserId == game.OrganizerId)
-                    continue; // Organizator nie płaci sam sobie
+                    continue;
 
                 var settlement = new Settlement
                 {

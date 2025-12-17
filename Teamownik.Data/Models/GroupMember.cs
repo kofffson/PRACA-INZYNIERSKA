@@ -5,9 +5,9 @@ public class GroupMember
     public int GroupMemberId { get; set; }
     public int GroupId { get; set; }
     public string UserId { get; set; } = string.Empty;
-    public bool IsVIP { get; set; } = false;
-    public int GamesPlayed { get; set; } = 0;
-    public int GamesOrganized { get; set; } = 0;
+    public bool IsVIP { get; set; }
+    public int GamesPlayed { get; set; }
+    public int GamesOrganized { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastGamePlayed { get; set; }
     

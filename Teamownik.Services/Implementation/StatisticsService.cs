@@ -16,14 +16,12 @@ namespace Teamownik.Services.Implementation
             _logger = logger;
         }
 
-        // ✅ ZOPTYMALIZOWANE - N+1 problem wyeliminowany
         public async Task UpdateUserStatisticsAsync(string userId)
         {
             try
             {
                 var now = DateTime.UtcNow;
 
-                // Pobierz wszystko w jednym zapytaniu
                 var stats = await _context.GroupMembers
                     .Where(gm => gm.UserId == userId)
                     .Select(gm => new
@@ -46,7 +44,6 @@ namespace Teamownik.Services.Implementation
                     stat.Member.GamesPlayed = stat.GamesPlayed;
                     stat.Member.GamesOrganized = stat.GamesOrganized;
 
-                    // Sprawdź promocję VIP bez dodatkowego zapytania
                     var membershipDuration = (now - stat.Member.JoinedAt).TotalDays;
                     if (!stat.Member.IsVIP && 
                         (stat.GamesPlayed >= 10 || stat.GamesOrganized >= 5) && 
@@ -64,7 +61,6 @@ namespace Teamownik.Services.Implementation
             }
         }
 
-        // ✅ ZOPTYMALIZOWANE - jedno zapytanie
         public async Task<bool> ShouldPromoteToVIPAsync(string userId, int groupId)
         {
             var member = await _context.GroupMembers
