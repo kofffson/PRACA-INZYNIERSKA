@@ -67,7 +67,6 @@ namespace Teamownik.Web.Areas.Identity.Pages.Account
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            // Sprawdź, czy pola zostały wypełnione poprawnie
             if (!ModelState.IsValid)
             {
                 return Page();

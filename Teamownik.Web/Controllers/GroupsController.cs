@@ -30,7 +30,7 @@ public class GroupsController(
                 {
                     GroupId = g.GroupId,
                     GroupName = g.GroupName,
-                    CreatorName = g.Creator?.FullName ?? g.Creator?.UserName ?? "Nieznany",
+                    CreatorName = g.Creator?.FullName ?? g.Creator?.UserName ?? Constants.Shared.UnknownUser,
                     MemberCount = g.Members.Count,
                     IsCreator = g.CreatedBy == userId,
                     CreatedAt = g.CreatedAt
@@ -62,7 +62,7 @@ public class GroupsController(
             {
                 GroupId = group.GroupId,
                 GroupName = group.GroupName,
-                CreatorName = group.Creator?.FullName ?? group.Creator?.UserName ?? "Nieznany",
+                CreatorName = group.Creator?.FullName ?? group.Creator?.UserName ?? Constants.Shared.UnknownUser,
                 CreatedAt = group.CreatedAt,
                 IsCreator = group.CreatedBy == currentUserId,
                 MemberCount = members.Count(),
@@ -70,7 +70,7 @@ public class GroupsController(
                 Members = [.. members.Select(m => new GroupMemberViewModel
                 {
                     UserId = m.UserId,
-                    UserName = m.User?.FullName ?? m.User?.UserName ?? "Nieznany",
+                    UserName = m.User?.FullName ?? m.User?.UserName ?? Constants.Shared.UnknownUser,
                     IsVIP = m.IsVIP,
                     JoinedAt = m.JoinedAt,
                     GamesPlayed = m.GamesPlayed,
@@ -253,13 +253,13 @@ public class GroupsController(
                 ? $"Użytkownik {userToAdd.FullName} został dodany do grupy!"
                 : "Nie udało się dodać użytkownika";
 
-            return RedirectToAction("Details", new { id = groupId, activeTab = "settings" });
+            return RedirectToAction("Details", new { id = groupId, activeTab = Constants.Navigation.TabSettings });
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Błąd podczas dodawania członka do grupy");
             TempData["Error"] = "Wystąpił błąd podczas dodawania członka";
-            return RedirectToAction("Details", new { id = groupId, activeTab = "settings" });
+            return RedirectToAction("Details", new { id = groupId, activeTab = Constants.Navigation.TabSettings });
         }
     }
 
@@ -280,13 +280,13 @@ public class GroupsController(
                 ? "Członek został usunięty z grupy"
                 : "Nie udało się usunąć członka z grupy";
 
-            return RedirectToAction("Details", new { id = groupId, activeTab = "members" });
+            return RedirectToAction("Details", new { id = groupId, activeTab = Constants.Navigation.TabMembers});
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Błąd podczas usuwania członka z grupy");
             TempData["Error"] = "Wystąpił błąd podczas usuwania członka z grupy";
-            return RedirectToAction("Details", new { id = groupId, activeTab = "members" });
+            return RedirectToAction("Details", new { id = groupId, activeTab = Constants.Navigation.TabMembers });
         }
     }
 

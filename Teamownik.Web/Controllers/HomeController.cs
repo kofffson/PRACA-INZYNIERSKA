@@ -12,34 +12,19 @@ using Teamownik.Web.Models;
 namespace Teamownik.Web.Controllers;
 
 [Authorize]
-public class HomeController : Controller
+public class HomeController(
+    ILogger<HomeController> logger,
+    UserManager<ApplicationUser> userManager,
+    IGameService gameService,
+    IGroupService groupService,
+    TeamownikDbContext context) : Controller
 {
-    private readonly ILogger<HomeController> _logger;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IGameService _gameService;
-    private readonly IGroupService _groupService;
-    private readonly TeamownikDbContext _context;
-
-    public HomeController(
-        ILogger<HomeController> logger,
-        UserManager<ApplicationUser> userManager,
-        IGameService gameService,
-        IGroupService groupService,
-        TeamownikDbContext context)
-    {
-        _logger = logger;
-        _userManager = userManager;
-        _gameService = gameService;
-        _groupService = groupService;
-        _context = context;
-    }
-
     public async Task<IActionResult> Index()
     {
         var userId = GetUserId();
         if (userId == null) return RedirectToLogin();
 
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByIdAsync(userId);
         if (user == null) return RedirectToLogin();
 
         var model = new HomeViewModel
@@ -59,21 +44,21 @@ public class HomeController : Controller
         try
         {
             var now = DateTime.UtcNow.AddMinutes(-5);
-            
-            var userGroups = await _groupService.GetUserGroupsAsync(userId);
+
+            var userGroups = await groupService.GetUserGroupsAsync(userId);
             model.ActiveGroupsCount = userGroups.Count();
 
-            model.UnpaidSettlementsCount = await _context.Settlements
+            model.UnpaidSettlementsCount = await context.Settlements
                 .CountAsync(s => s.PayerId == userId && !s.IsPaid);
 
-            model.UpcomingGamesCount = await _context.GameParticipants
+            model.UpcomingGamesCount = await context.GameParticipants
                 .CountAsync(gp => gp.UserId == userId && gp.Game.StartDateTime > now);
 
-            model.TotalUsersInGroups = await _context.Users.CountAsync();
+            model.TotalUsersInGroups = await context.Users.CountAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas ładowania statystyk użytkownika");
+            logger.LogError(ex, "Błąd podczas ładowania statystyk użytkownika");
             model.ActiveGroupsCount = 0;
             model.UnpaidSettlementsCount = 0;
             model.UpcomingGamesCount = 0;
@@ -87,9 +72,9 @@ public class HomeController : Controller
         {
             var now = DateTime.UtcNow.AddMinutes(-5);
 
-            var organizedGames = await _gameService.GetGamesByOrganizerAsync(userId);
+            var organizedGames = await gameService.GetGamesByOrganizerAsync(userId);
             var upcomingOrganized = organizedGames
-                .Where(g => g.StartDateTime > now && g.Status != "cancelled")
+                .Where(g => g.StartDateTime > now && g.Status != Constants.GameStatus.Cancelled)
                 .OrderBy(g => g.StartDateTime);
 
             foreach (var game in upcomingOrganized)
@@ -97,9 +82,9 @@ public class HomeController : Controller
                 model.MyOrganizedGames.Add(await MapToGameCardViewModel(game, userId));
             }
 
-            var participatingGames = await _gameService.GetGamesByParticipantAsync(userId);
+            var participatingGames = await gameService.GetGamesByParticipantAsync(userId);
             var upcomingParticipating = participatingGames
-                .Where(g => g.OrganizerId != userId && g.StartDateTime > now && g.Status != "cancelled")
+                .Where(g => g.OrganizerId != userId && g.StartDateTime > now && g.Status != Constants.GameStatus.Cancelled)
                 .OrderBy(g => g.StartDateTime);
 
             foreach (var game in upcomingParticipating)
@@ -107,16 +92,16 @@ public class HomeController : Controller
                 model.MyParticipatingGames.Add(await MapToGameCardViewModel(game, userId));
             }
 
-            var userGroups = await _groupService.GetUserGroupsAsync(userId);
+            var userGroups = await groupService.GetUserGroupsAsync(userId);
             var groupIds = userGroups.Select(g => g.GroupId).ToList();
 
-            var groupGames = await _context.Games
+            var groupGames = await context.Games
                 .Include(g => g.Organizer)
                 .Include(g => g.Participants)
                 .Include(g => g.Group)
-                .Where(g => groupIds.Contains(g.GroupId ?? 0) 
-                    && g.StartDateTime > now 
-                    && (g.Status == "open" || g.Status == "full")
+                .Where(g => groupIds.Contains(g.GroupId ?? 0)
+                    && g.StartDateTime > now
+                    && (g.Status == Constants.GameStatus.Open || g.Status == Constants.GameStatus.Full)
                     && g.OrganizerId != userId
                     && !g.Participants.Any(p => p.UserId == userId))
                 .OrderBy(g => g.StartDateTime)
@@ -129,12 +114,12 @@ public class HomeController : Controller
                 model.MyGroupGames.Add(cardModel);
             }
 
-            var publicGames = await _context.Games
+            var publicGames = await context.Games
                 .Include(g => g.Organizer)
                 .Include(g => g.Participants)
-                .Where(g => g.IsPublic 
-                    && g.StartDateTime > now 
-                    && (g.Status == "open" || g.Status == "full")
+                .Where(g => g.IsPublic
+                    && g.StartDateTime > now
+                    && (g.Status == Constants.GameStatus.Open || g.Status == Constants.GameStatus.Full)
                     && g.OrganizerId != userId
                     && !groupIds.Contains(g.GroupId ?? 0)
                     && !g.Participants.Any(p => p.UserId == userId))
@@ -148,15 +133,15 @@ public class HomeController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas ładowania gier użytkownika");
+            logger.LogError(ex, "Błąd podczas ładowania gier użytkownika");
         }
     }
 
     private async Task<GameCardViewModel> MapToGameCardViewModel(Game game, string userId)
     {
-        var totalSlotsOccupied = await _gameService.GetTotalSlotsOccupiedAsync(game.GameId);
-        var waitlist = await _gameService.GetWaitlistAsync(game.GameId);
-        
+        var totalSlotsOccupied = await gameService.GetTotalSlotsOccupiedAsync(game.GameId);
+        var waitlist = await gameService.GetWaitlistAsync(game.GameId);
+
         var participant = game.Participants?.FirstOrDefault(p => p.UserId == userId);
         var isUserParticipant = participant != null;
 
@@ -188,12 +173,13 @@ public class HomeController : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel 
-        { 
-            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier 
+        return View(new ErrorViewModel
+        {
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
         });
     }
 
     private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+
     private IActionResult RedirectToLogin() => RedirectToPage("/Identity/Account/Login");
 }

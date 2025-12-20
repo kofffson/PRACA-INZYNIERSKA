@@ -107,4 +107,14 @@ public static class Constants
         public const string DateFormat = "dd.MM.yyyy";
         public const string DateTimeFormat = "dd.MM.yyyy • HH:mm";
     }
+    public static class Shared
+    {
+        public const string UnknownUser = "Nieznany";
+    }
+
+    public static class Navigation
+    {
+        public const string TabSettings = "settings";
+        public const string TabMembers = "members";
+    }
 }
