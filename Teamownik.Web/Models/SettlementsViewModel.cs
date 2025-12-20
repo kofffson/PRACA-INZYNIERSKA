@@ -7,11 +7,10 @@ public class SettlementsViewModel
     public string CurrentMonthName { get; set; } = string.Empty;
     public decimal TotalToPay { get; set; }
     public decimal TotalPaidThisMonth { get; set; }
-    
-    public List<SettlementViewModel> PaymentsToMake { get; set; } = new();
-    public List<SettlementViewModel> PaidHistory { get; set; } = new();
-    
-    // NOWE - Podsumowanie miesięczne wbudowane
+
+    public List<SettlementViewModel> PaymentsToMake { get; set; } = [];
+    public List<SettlementViewModel> PaidHistory { get; set; } = [];
+
     public MonthlyBreakdown? MonthlyBreakdown { get; set; }
 }
 
@@ -26,7 +25,7 @@ public class MonthlyBreakdown
 public class ReceivablesViewModel
 {
     public decimal TotalToReceive { get; set; }
-    public List<SettlementViewModel> Receivables { get; set; } = new();
+    public List<SettlementViewModel> Receivables { get; set; } = [];
 }
 
 public class SettlementViewModel
@@ -42,20 +41,18 @@ public class SettlementViewModel
     public string Status { get; set; } = string.Empty;
     public string? PaymentMethod { get; set; }
     public DateTime DueDate { get; set; }
-    public DateTime? PaidAt { get; set; } 
-    
+    public DateTime? PaidAt { get; set; }
+
     public bool IsOverdue => !IsPaid && DueDate < DateTime.UtcNow;
+
     public string StatusBadgeClass => Status switch
     {
-        "paid" => "bg-success",
-        "overdue" => "bg-danger",
-        "pending" => "bg-warning",
-        _ => "bg-secondary"
+        Constants.SettlementStatus.Paid => Constants.CssClasses.BgSuccess,
+        Constants.SettlementStatus.Overdue => Constants.CssClasses.BgDanger,
+        Constants.SettlementStatus.Pending => Constants.CssClasses.BgWarning,
+        _ => Constants.CssClasses.BgSecondary
     };
 }
-
-// ViewModele które już nie są potrzebne (opcjonalnie możesz je usunąć)
-// MonthlySettlementViewModel - zastąpione przez MonthlyBreakdown w SettlementsViewModel
 
 public class GameSettlementsViewModel
 {
@@ -67,10 +64,10 @@ public class GameSettlementsViewModel
     public int UnpaidCount { get; set; }
     public decimal TotalCollected { get; set; }
     public decimal TotalOutstanding { get; set; }
-    public List<GameSettlementDetailViewModel> Settlements { get; set; } = new();
-    
-    public decimal CollectionPercentage => TotalAmount * TotalParticipants > 0 
-        ? (TotalCollected / (TotalAmount * TotalParticipants)) * 100 
+    public List<GameSettlementDetailViewModel> Settlements { get; set; } = [];
+
+    public decimal CollectionPercentage => TotalAmount * TotalParticipants > 0
+        ? (TotalCollected / (TotalAmount * TotalParticipants)) * 100
         : 0;
 }
 
@@ -84,6 +81,6 @@ public class GameSettlementDetailViewModel
     public DateTime? PaidAt { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime DueDate { get; set; }
-    
+
     public bool IsOverdue => !IsPaid && DueDate < DateTime.UtcNow;
 }

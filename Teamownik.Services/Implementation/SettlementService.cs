@@ -6,40 +6,31 @@ using Teamownik.Services.Interfaces;
 
 namespace Teamownik.Services.Implementation;
 
-public class SettlementService : ISettlementService
+public class SettlementService(TeamownikDbContext context, ILogger<SettlementService> logger) : ISettlementService
 {
-    private readonly TeamownikDbContext _context;
-    private readonly ILogger<SettlementService> _logger;
-
-    public SettlementService(TeamownikDbContext context, ILogger<SettlementService> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<IEnumerable<Settlement>> GenerateSettlementsForGameAsync(int gameId)
     {
         try
         {
-            var game = await _context.Games
+            var game = await context.Games
                 .Include(g => g.Participants)
                 .ThenInclude(p => p.User)
                 .Include(g => g.Organizer)
                 .FirstOrDefaultAsync(g => g.GameId == gameId);
 
-            if (game == null || !game.IsPaid || game.Cost <= 0)
-                return Enumerable.Empty<Settlement>();
+            if (game?.IsPaid != true || game.Cost <= 0)
+                return [];
 
-            var existingSettlements = await _context.Settlements
+            var existingSettlements = await context.Settlements
                 .Where(s => s.GameId == gameId)
                 .ToListAsync();
 
-            if (existingSettlements.Any())
+            if (existingSettlements.Count != 0)
                 return existingSettlements;
 
             var settlements = new List<Settlement>();
             var confirmedParticipants = game.Participants
-                .Where(p => p.Status == "confirmed")
+                .Where(p => p.Status == Constants.ParticipantStatus.Confirmed)
                 .ToList();
 
             foreach (var participant in confirmedParticipants)
@@ -54,7 +45,7 @@ public class SettlementService : ISettlementService
                     RecipientId = game.OrganizerId,
                     Amount = game.Cost,
                     IsPaid = false,
-                    Status = "pending",
+                    Status = Constants.SettlementStatus.Default,
                     DueDate = DateTime.SpecifyKind(game.StartDateTime.AddDays(-1), DateTimeKind.Utc),
                     CreatedAt = DateTime.UtcNow,
                     BankAccountNumber = game.Organizer.PhoneNumber
@@ -63,18 +54,18 @@ public class SettlementService : ISettlementService
                 settlements.Add(settlement);
             }
 
-            if (settlements.Any())
+            if (settlements.Count != 0)
             {
-                await _context.Settlements.AddRangeAsync(settlements);
-                await _context.SaveChangesAsync();
+                await context.Settlements.AddRangeAsync(settlements);
+                await context.SaveChangesAsync();
             }
 
             return settlements;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas generowania rozliczeń dla gry {GameId}", gameId);
-            return Enumerable.Empty<Settlement>();
+            logger.LogError(ex, "Błąd podczas generowania rozliczeń dla gry {GameId}", gameId);
+            return [];
         }
     }
 
@@ -82,19 +73,19 @@ public class SettlementService : ISettlementService
     {
         try
         {
-            var existingSettlements = await _context.Settlements
+            var existingSettlements = await context.Settlements
                 .Where(s => s.GameId == gameId)
                 .ToListAsync();
 
-            _context.Settlements.RemoveRange(existingSettlements);
-            await _context.SaveChangesAsync();
+            context.Settlements.RemoveRange(existingSettlements);
+            await context.SaveChangesAsync();
 
             await GenerateSettlementsForGameAsync(gameId);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas regeneracji rozliczeń dla gry {GameId}", gameId);
+            logger.LogError(ex, "Błąd podczas regeneracji rozliczeń dla gry {GameId}", gameId);
             return false;
         }
     }
@@ -103,21 +94,21 @@ public class SettlementService : ISettlementService
     {
         try
         {
-            var settlement = await _context.Settlements.FindAsync(settlementId);
+            var settlement = await context.Settlements.FindAsync(settlementId);
             if (settlement == null) return false;
 
             settlement.IsPaid = true;
             settlement.PaidAt = DateTime.UtcNow;
-            settlement.Status = "paid";
+            settlement.Status = Constants.SettlementStatus.Paid;
             settlement.PaymentMethod = paymentMethod;
             settlement.PaymentReference = paymentReference;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas oznaczania płatności jako opłaconej {SettlementId}", settlementId);
+            logger.LogError(ex, "Błąd podczas oznaczania płatności jako opłaconej {SettlementId}", settlementId);
             return false;
         }
     }
@@ -126,7 +117,7 @@ public class SettlementService : ISettlementService
     {
         try
         {
-            var settlement = await _context.Settlements
+            var settlement = await context.Settlements
                 .Include(s => s.Game)
                 .FirstOrDefaultAsync(s => s.SettlementId == settlementId);
 
@@ -135,16 +126,16 @@ public class SettlementService : ISettlementService
 
             settlement.IsPaid = true;
             settlement.PaidAt = DateTime.UtcNow;
-            settlement.Status = "paid";
-            settlement.PaymentMethod = "confirmed_by_organizer";
+            settlement.Status = Constants.SettlementStatus.Paid;
+            settlement.PaymentMethod = Constants.PaymentMethod.ConfirmedByOrganizer;
             settlement.Notes = $"Potwierdzono przez organizatora w dniu {DateTime.UtcNow:dd.MM.yyyy HH:mm}";
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas potwierdzania płatności przez organizatora {SettlementId}", settlementId);
+            logger.LogError(ex, "Błąd podczas potwierdzania płatności przez organizatora {SettlementId}", settlementId);
             return false;
         }
     }
@@ -153,25 +144,25 @@ public class SettlementService : ISettlementService
     {
         try
         {
-            var settlement = await _context.Settlements.FindAsync(settlementId);
+            var settlement = await context.Settlements.FindAsync(settlementId);
             if (settlement == null) return false;
 
-            settlement.Status = "cancelled";
+            settlement.Status = Constants.SettlementStatus.Cancelled;
             settlement.Notes = reason;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas anulowania rozliczenia {SettlementId}", settlementId);
+            logger.LogError(ex, "Błąd podczas anulowania rozliczenia {SettlementId}", settlementId);
             return false;
         }
     }
 
     public async Task<IEnumerable<Settlement>> GetUserPaymentsAsync(string userId, bool onlyUnpaid = false)
     {
-        var query = _context.Settlements
+        var query = context.Settlements
             .Include(s => s.Game)
             .Include(s => s.Recipient)
             .Where(s => s.PayerId == userId);
@@ -186,7 +177,7 @@ public class SettlementService : ISettlementService
 
     public async Task<IEnumerable<Settlement>> GetUserReceivablesAsync(string userId, bool onlyUnpaid = false)
     {
-        var query = _context.Settlements
+        var query = context.Settlements
             .Include(s => s.Game)
             .Include(s => s.Payer)
             .Where(s => s.RecipientId == userId);
@@ -201,7 +192,7 @@ public class SettlementService : ISettlementService
 
     public async Task<Settlement?> GetSettlementByIdAsync(int settlementId)
     {
-        return await _context.Settlements
+        return await context.Settlements
             .Include(s => s.Game)
             .Include(s => s.Payer)
             .Include(s => s.Recipient)
@@ -210,15 +201,15 @@ public class SettlementService : ISettlementService
 
     public async Task<decimal> GetTotalToPayAsync(string userId)
     {
-        return await _context.Settlements
-            .Where(s => s.PayerId == userId && !s.IsPaid && s.Status == "pending")
+        return await context.Settlements
+            .Where(s => s.PayerId == userId && !s.IsPaid && s.Status == Constants.SettlementStatus.Pending)
             .SumAsync(s => s.Amount);
     }
 
     public async Task<decimal> GetTotalToReceiveAsync(string userId)
     {
-        return await _context.Settlements
-            .Where(s => s.RecipientId == userId && !s.IsPaid && s.Status == "pending")
+        return await context.Settlements
+            .Where(s => s.RecipientId == userId && !s.IsPaid && s.Status == Constants.SettlementStatus.Pending)
             .SumAsync(s => s.Amount);
     }
 
@@ -228,10 +219,10 @@ public class SettlementService : ISettlementService
         var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var endOfMonth = startOfMonth.AddMonths(1);
 
-        return await _context.Settlements
-            .Where(s => s.PayerId == userId 
-                && s.IsPaid 
-                && s.PaidAt >= startOfMonth 
+        return await context.Settlements
+            .Where(s => s.PayerId == userId
+                && s.IsPaid
+                && s.PaidAt >= startOfMonth
                 && s.PaidAt < endOfMonth)
             .SumAsync(s => s.Amount);
     }
@@ -241,10 +232,10 @@ public class SettlementService : ISettlementService
         var startOfMonth = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
         var endOfMonth = startOfMonth.AddMonths(1);
 
-        var payments = await _context.Settlements
+        var payments = await context.Settlements
             .Include(s => s.Game)
-            .Where(s => s.PayerId == userId 
-                && s.Game.StartDateTime >= startOfMonth 
+            .Where(s => s.PayerId == userId
+                && s.Game.StartDateTime >= startOfMonth
                 && s.Game.StartDateTime < endOfMonth)
             .ToListAsync();
 
@@ -263,7 +254,7 @@ public class SettlementService : ISettlementService
 
     public async Task<IEnumerable<Settlement>> GetSettlementsForGameAsync(int gameId)
     {
-        return await _context.Settlements
+        return await context.Settlements
             .Include(s => s.Payer)
             .Include(s => s.Game)
             .Where(s => s.GameId == gameId)
@@ -274,7 +265,7 @@ public class SettlementService : ISettlementService
 
     public async Task<GameSettlementSummary> GetGameSettlementSummaryAsync(int gameId)
     {
-        var game = await _context.Games
+        var game = await context.Games
             .Include(g => g.Settlements)
             .ThenInclude(s => s.Payer)
             .FirstOrDefaultAsync(g => g.GameId == gameId);
@@ -296,7 +287,7 @@ public class SettlementService : ISettlementService
             UnpaidCount = unpaidCount,
             TotalCollected = settlements.Where(s => s.IsPaid).Sum(s => s.Amount),
             TotalOutstanding = settlements.Where(s => !s.IsPaid).Sum(s => s.Amount),
-            Settlements = settlements.Select(s => new SettlementDetail
+            Settlements = settlements.ConvertAll(s => new SettlementDetail
             {
                 SettlementId = s.SettlementId,
                 PayerName = s.Payer.FullName,
@@ -306,7 +297,7 @@ public class SettlementService : ISettlementService
                 PaidAt = s.PaidAt,
                 Status = s.Status,
                 DueDate = s.DueDate
-            }).ToList()
+            })
         };
     }
 

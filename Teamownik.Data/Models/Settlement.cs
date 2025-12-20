@@ -15,8 +15,8 @@ public class Settlement
     
     public string? PaymentMethod { get; set; }
     public string? PaymentReference { get; set; } 
-    public string? PaymentProviderId { get; set; } 
-    public string Status { get; set; } = "pending"; 
+    public string? PaymentProviderId { get; set; }
+    public string Status { get; set; } = Constants.SettlementStatus.Default;
     public string? Notes { get; set; } 
     
     public Game Game { get; set; } = null!;

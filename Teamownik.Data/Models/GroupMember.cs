@@ -10,7 +10,6 @@ public class GroupMember
     public int GamesOrganized { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastGamePlayed { get; set; }
-    
     public Group Group { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
 }

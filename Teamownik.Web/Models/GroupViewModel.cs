@@ -5,7 +5,7 @@ namespace Teamownik.Web.Models;
 
 public class GroupsIndexViewModel
 {
-    public List<GroupCardViewModel> UserGroups { get; set; } = new();
+    public List<GroupCardViewModel> UserGroups { get; set; } = [];
 }
 
 public class GroupCardViewModel
@@ -18,7 +18,6 @@ public class GroupCardViewModel
     public DateTime CreatedAt { get; set; }
 }
 
-
 public class GroupDetailsViewModel
 {
     public int GroupId { get; set; }
@@ -28,11 +27,11 @@ public class GroupDetailsViewModel
     public bool IsCreator { get; set; }
     public int MemberCount { get; set; }
     public string CurrentUserId { get; set; } = string.Empty;
-    
-    public List<GroupMemberViewModel> Members { get; set; } = new();
-    public List<Game> UpcomingGames { get; set; } = new();
-    public List<GroupMessage> RecentMessages { get; set; } = new();
-    
+
+    public List<GroupMemberViewModel> Members { get; set; } = [];
+    public List<Game> UpcomingGames { get; set; } = [];
+    public List<GroupMessage> RecentMessages { get; set; } = [];
+
     public int TotalGamesPlayed => Members.Sum(m => m.GamesPlayed);
     public int TotalGamesOrganized => Members.Sum(m => m.GamesOrganized);
     public int VIPCount => Members.Count(m => m.IsVIP);
@@ -45,17 +44,17 @@ public class GroupMemberViewModel
     public bool IsVIP { get; set; }
     public DateTime JoinedAt { get; set; }
     public int GamesPlayed { get; set; }
-    
+
     public int GamesOrganized { get; set; }
-    
-    public string StatsSummary 
+
+    public string StatsSummary
     {
         get
         {
             return $"{GamesPlayed} rozegranych • {GamesOrganized} zorganizowanych";
         }
     }
-    
+
     public bool CanToggleVIP { get; set; }
 }
 

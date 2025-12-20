@@ -17,13 +17,13 @@ public class Game
     
     public Guid? RecurrenceSeriesId { get; set; } 
 
-    public string Status { get; set; } = "open"; 
+    public string Status { get; set; } = Constants.GameStatus.Default; 
     public bool IsPublic { get; set; } = true;
     public string? CancellationReason { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     public ApplicationUser Organizer { get; set; } = null!;
     public Group? Group { get; set; }
-    public ICollection<GameParticipant> Participants { get; set; } = new List<GameParticipant>();
-    public ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
+    public ICollection<GameParticipant> Participants { get; set; } = [];
+    public ICollection<Settlement> Settlements { get; set; } = [];
 }

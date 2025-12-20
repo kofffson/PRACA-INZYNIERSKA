@@ -6,28 +6,15 @@ using Teamownik.Services.Interfaces;
 
 namespace Teamownik.Services.Implementation;
 
-public class GameService : IGameService
+public class GameService(
+    TeamownikDbContext context,
+    IStatisticsService statisticsService,
+    ILogger<GameService> logger,
+    ISettlementService settlementService) : IGameService
 {
-    private readonly TeamownikDbContext _context;
-    private readonly IStatisticsService _statisticsService;
-    private readonly ILogger<GameService> _logger;
-    private readonly ISettlementService _settlementService;
-
-    public GameService(
-        TeamownikDbContext context, 
-        IStatisticsService statisticsService, 
-        ILogger<GameService> logger,
-        ISettlementService settlementService)
-    {
-        _context = context;
-        _statisticsService = statisticsService;
-        _logger = logger;
-        _settlementService = settlementService;
-    }
-
     public async Task<Game?> GetGameByIdAsync(int gameId)
     {
-        return await _context.Games
+        return await context.Games
             .Include(g => g.Organizer)
             .Include(g => g.Group)
             .Include(g => g.Participants)
@@ -38,8 +25,8 @@ public class GameService : IGameService
     public async Task<IEnumerable<Game>> GetUpcomingGamesAsync()
     {
         var now = DateTime.UtcNow;
-        return await _context.Games
-            .Where(g => g.StartDateTime > now && g.Status != "cancelled")
+        return await context.Games
+            .Where(g => g.StartDateTime > now && g.Status != Constants.GameStatus.Cancelled)
             .Include(g => g.Organizer)
             .Include(g => g.Group)
             .OrderBy(g => g.StartDateTime)
@@ -48,7 +35,7 @@ public class GameService : IGameService
 
     public async Task<IEnumerable<Game>> GetGamesByOrganizerAsync(string userId)
     {
-        return await _context.Games
+        return await context.Games
             .Where(g => g.OrganizerId == userId)
             .Include(g => g.Organizer)
             .Include(g => g.Group)
@@ -59,7 +46,7 @@ public class GameService : IGameService
 
     public async Task<IEnumerable<Game>> GetGamesByParticipantAsync(string userId)
     {
-        return await _context.Games
+        return await context.Games
             .Where(g => g.Participants.Any(p => p.UserId == userId))
             .Include(g => g.Organizer)
             .Include(g => g.Group)
@@ -69,8 +56,8 @@ public class GameService : IGameService
 
     public async Task<IEnumerable<Game>> GetGamesByGroupAsync(int groupId)
     {
-        return await _context.Games
-            .Where(g => g.GroupId == groupId && g.Status != "cancelled")
+        return await context.Games
+            .Where(g => g.GroupId == groupId && g.Status != Constants.GameStatus.Cancelled)
             .Include(g => g.Organizer)
             .Include(g => g.Participants)
             .OrderBy(g => g.StartDateTime)
@@ -82,52 +69,50 @@ public class GameService : IGameService
         try
         {
             game.CreatedAt = DateTime.UtcNow;
-            game.Status = "open";
-            
-            _context.Games.Add(game);
-            await _context.SaveChangesAsync();
-            
-            _logger.LogInformation("Game created successfully with ID: {GameId}", game.GameId);
+            game.Status = Constants.GameStatus.Default;
+
+            context.Games.Add(game);
+            await context.SaveChangesAsync();
+
+            logger.LogInformation("Game created successfully with ID: {GameId}", game.GameId);
             return game;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating game");
+            logger.LogError(ex, "Error creating game");
             throw;
         }
     }
 
     public async Task<bool> UpdateGameAsync(Game game)
     {
-        _context.Games.Update(game);
-        return await _context.SaveChangesAsync() > 0;
+        context.Games.Update(game);
+        return await context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteGameAsync(int gameId)
     {
-        var game = await _context.Games.FindAsync(gameId);
+        var game = await context.Games.FindAsync(gameId);
         if (game == null) return false;
-        
-        _context.Games.Remove(game);
-        return await _context.SaveChangesAsync() > 0;
+
+        context.Games.Remove(game);
+        return await context.SaveChangesAsync() > 0;
     }
-    
+
     public async Task<bool> JoinGameAsync(int gameId, string userId, int guestsCount = 0)
     {
-        var game = await _context.Games
-            .Include(g => g.Participants.Where(p => p.Status == "confirmed" || p.UserId == userId))
+        var game = await context.Games
+            .Include(g => g.Participants.Where(p => p.Status == Constants.ParticipantStatus.Confirmed || p.UserId == userId))
             .FirstOrDefaultAsync(g => g.GameId == gameId);
 
         if (game == null) return false;
 
         var timeUntilStart = game.StartDateTime - DateTime.UtcNow;
-        //if (timeUntilStart.TotalMinutes < 30) 
-            if (timeUntilStart.TotalMinutes < 0)
-
+        if (timeUntilStart.TotalMinutes < Constants.Defaults.RegistrationCloseMinutes)
         {
-            _logger.LogWarning(
-                "Próba zapisu na spotkanie {GameId} za mniej niż 30 minut przed startem. Pozostało: {Minutes:F1} minut",
-                gameId, timeUntilStart.TotalMinutes);
+            logger.LogWarning(
+                "Próba zapisu na spotkanie {GameId} za mniej niż {Minutes} minut przed startem. Pozostało: {RemainingMinutes:F1} minut",
+                gameId, Constants.Defaults.RegistrationCloseMinutes, timeUntilStart.TotalMinutes);
             return false;
         }
 
@@ -135,9 +120,9 @@ public class GameService : IGameService
             return false;
 
         var totalSlotsOccupied = game.Participants
-            .Where(p => p.Status == "confirmed")
+            .Where(p => p.Status == Constants.ParticipantStatus.Confirmed)
             .Sum(p => p.TotalSlotsOccupied);
-        
+
         var totalSlotsNeeded = 1 + guestsCount;
         var availableSlots = game.MaxParticipants - totalSlotsOccupied;
         var isReserve = availableSlots < totalSlotsNeeded;
@@ -145,10 +130,10 @@ public class GameService : IGameService
         int? waitlistPosition = null;
         if (isReserve)
         {
-            var maxPosition = await _context.GameParticipants
-                .Where(p => p.GameId == gameId && p.Status == "reserve")
-                .MaxAsync(p => (int?)p.WaitlistPosition) ?? 0;
-            
+            var maxPosition = await context.GameParticipants
+                .Where(p => p.GameId == gameId && p.Status == Constants.ParticipantStatus.Reserve)
+                .MaxAsync(p => p.WaitlistPosition) ?? 0;
+
             waitlistPosition = maxPosition + 1;
         }
 
@@ -157,38 +142,38 @@ public class GameService : IGameService
             GameId = gameId,
             UserId = userId,
             GuestsCount = guestsCount,
-            Status = isReserve ? "reserve" : "confirmed",
+            Status = isReserve ? Constants.ParticipantStatus.Reserve : Constants.ParticipantStatus.Confirmed,
             JoinedAt = DateTime.UtcNow,
             ConfirmedAt = isReserve ? null : DateTime.UtcNow,
             WaitlistPosition = waitlistPosition
         };
 
-        _context.GameParticipants.Add(participant);
+        context.GameParticipants.Add(participant);
 
         if (!isReserve && totalSlotsOccupied + totalSlotsNeeded >= game.MaxParticipants)
         {
-            game.Status = "full";
+            game.Status = Constants.GameStatus.Full;
         }
 
-        await _context.SaveChangesAsync();
-        await _statisticsService.UpdateUserStatisticsAsync(userId);
+        await context.SaveChangesAsync();
+        await statisticsService.UpdateUserStatisticsAsync(userId);
 
         return true;
     }
 
     public async Task<bool> LeaveGameAsync(int gameId, string userId)
     {
-        var participant = await _context.GameParticipants
+        var participant = await context.GameParticipants
             .FirstOrDefaultAsync(p => p.GameId == gameId && p.UserId == userId);
 
         if (participant == null) return false;
 
-        var wasConfirmed = participant.Status == "confirmed";
-        
-        _context.GameParticipants.Remove(participant);
-        await _context.SaveChangesAsync();
+        var wasConfirmed = participant.Status == Constants.ParticipantStatus.Confirmed;
 
-        await _statisticsService.UpdateUserStatisticsAsync(userId);
+        context.GameParticipants.Remove(participant);
+        await context.SaveChangesAsync();
+
+        await statisticsService.UpdateUserStatisticsAsync(userId);
 
         if (wasConfirmed)
         {
@@ -200,13 +185,13 @@ public class GameService : IGameService
 
     public async Task<bool> IsUserParticipantAsync(int gameId, string userId)
     {
-        return await _context.GameParticipants
+        return await context.GameParticipants
             .AnyAsync(p => p.GameId == gameId && p.UserId == userId);
     }
 
     public async Task<int> GetAvailableSpotsAsync(int gameId)
     {
-        var game = await _context.Games.FindAsync(gameId);
+        var game = await context.Games.FindAsync(gameId);
         if (game == null) return 0;
 
         var occupiedSlots = await GetTotalSlotsOccupiedAsync(gameId);
@@ -215,45 +200,45 @@ public class GameService : IGameService
 
     public async Task<int> GetTotalSlotsOccupiedAsync(int gameId)
     {
-        var participants = await _context.GameParticipants
-            .Where(p => p.GameId == gameId && p.Status == "confirmed")
-            .Select(p => new { p.GuestsCount }) 
-            .ToListAsync(); 
-    
-        return participants.Sum(p => 1 + p.GuestsCount); 
+        var participants = await context.GameParticipants
+            .Where(p => p.GameId == gameId && p.Status == Constants.ParticipantStatus.Confirmed)
+            .Select(p => new { p.GuestsCount })
+            .ToListAsync();
+
+        return participants.Sum(p => 1 + p.GuestsCount);
     }
-    
+
     public async Task<bool> UpdateGuestsCountAsync(int gameId, string userId, int newGuestsCount)
     {
-        var game = await _context.Games
-            .Include(g => g.Participants.Where(p => p.Status == "confirmed"))
+        var game = await context.Games
+            .Include(g => g.Participants.Where(p => p.Status == Constants.ParticipantStatus.Confirmed))
             .FirstOrDefaultAsync(g => g.GameId == gameId);
 
         if (game == null) return false;
 
         var participant = game.Participants.FirstOrDefault(p => p.UserId == userId);
         if (participant == null) return false;
-        
+
         var currentOccupied = game.Participants.Sum(p => p.TotalSlotsOccupied);
         var oldSlots = participant.TotalSlotsOccupied;
         var newSlots = 1 + newGuestsCount;
         var difference = newSlots - oldSlots;
-        
+
         if (currentOccupied + difference > game.MaxParticipants)
         {
             return false;
         }
-        
+
         participant.GuestsCount = newGuestsCount;
-        await _context.SaveChangesAsync();
-        
+        await context.SaveChangesAsync();
+
         return true;
     }
 
     public async Task<IEnumerable<GameParticipant>> GetWaitlistAsync(int gameId)
     {
-        return await _context.GameParticipants
-            .Where(p => p.GameId == gameId && p.Status == "reserve")
+        return await context.GameParticipants
+            .Where(p => p.GameId == gameId && p.Status == Constants.ParticipantStatus.Reserve)
             .Include(p => p.User)
             .OrderBy(p => p.WaitlistPosition)
             .ToListAsync();
@@ -261,98 +246,95 @@ public class GameService : IGameService
 
     public async Task<bool> MoveFromWaitlistAsync(int gameId, string userId)
     {
-        var participant = await _context.GameParticipants
+        var participant = await context.GameParticipants
             .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.GameId == gameId && p.UserId == userId && p.Status == "reserve");
+            .FirstOrDefaultAsync(p => p.GameId == gameId && p.UserId == userId && p.Status == Constants.ParticipantStatus.Reserve);
 
         if (participant == null) return false;
 
-        participant.Status = "confirmed";
+        participant.Status = Constants.ParticipantStatus.Confirmed;
         participant.ConfirmedAt = DateTime.UtcNow;
         participant.WaitlistPosition = null;
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         return true;
     }
 
     public async Task<bool> PromoteFromWaitlistAsync(int gameId)
     {
-        var game = await _context.Games
+        var game = await context.Games
             .Include(g => g.Participants)
             .FirstOrDefaultAsync(g => g.GameId == gameId);
 
         if (game == null) return false;
 
         var confirmedSlots = game.Participants
-            .Where(p => p.Status == "confirmed")
+            .Where(p => p.Status == Constants.ParticipantStatus.Confirmed)
             .Sum(p => p.TotalSlotsOccupied);
-        
+
         var availableSpots = game.MaxParticipants - confirmedSlots;
         if (availableSpots <= 0) return false;
 
         var waitlist = game.Participants
-            .Where(p => p.Status == "reserve")
+            .Where(p => p.Status == Constants.ParticipantStatus.Reserve)
             .OrderBy(p => p.WaitlistPosition)
             .ToList();
-        
+
         foreach (var waitingParticipant in waitlist)
         {
             var slotsNeeded = waitingParticipant.TotalSlotsOccupied;
-            
+
             if (availableSpots >= slotsNeeded)
             {
-                waitingParticipant.Status = "confirmed";
+                waitingParticipant.Status = Constants.ParticipantStatus.Confirmed;
                 waitingParticipant.ConfirmedAt = DateTime.UtcNow;
                 waitingParticipant.WaitlistPosition = null;
                 availableSpots -= slotsNeeded;
             }
-            
+
             if (availableSpots <= 0) break;
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> UpdateGameStatusAsync(int gameId, string status)
     {
-        var game = await _context.Games.FindAsync(gameId);
+        var game = await context.Games.FindAsync(gameId);
         if (game == null) return false;
 
         game.Status = status;
-        return await _context.SaveChangesAsync() > 0;
+        return await context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> CancelGameAsync(int gameId, string reason)
     {
-        var game = await _context.Games.FindAsync(gameId);
+        var game = await context.Games.FindAsync(gameId);
         if (game == null) return false;
 
-        game.Status = "cancelled";
+        game.Status = Constants.GameStatus.Cancelled;
         game.CancellationReason = reason;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         return true;
     }
-    
-    private DateTime CalculateNextDate(DateTime currentDate, string? pattern)
+
+    private static DateTime CalculateNextDate(DateTime currentDate, string? pattern) => pattern switch
     {
-        return pattern switch
-        {
-            "daily" => currentDate.AddDays(1),
-            "weekly" => currentDate.AddDays(7),
-            "biweekly" => currentDate.AddDays(14),
-            "monthly" => currentDate.AddMonths(1),
-            _ => currentDate
-        };
-    }
+        Constants.RecurrencePattern.Daily => currentDate.AddDays(1),
+        Constants.RecurrencePattern.Weekly => currentDate.AddDays(7),
+        Constants.RecurrencePattern.Biweekly => currentDate.AddDays(14),
+        Constants.RecurrencePattern.Monthly => currentDate.AddMonths(1),
+        _ => currentDate
+    };
 
     public async Task<IEnumerable<Game>> CreateRecurringGamesAsync(Game template)
     {
         var games = new List<Game>();
         var currentDate = template.StartDateTime;
-        var limit = template.RecurrencePattern == "daily" ? 1 : 4;
+        var limit = template.RecurrencePattern == Constants.RecurrencePattern.Daily ? 1 : 4;
         var seriesId = Guid.NewGuid();
         var duration = template.EndDateTime - template.StartDateTime;
 
@@ -372,18 +354,18 @@ public class GameService : IGameService
                 IsRecurring = true,
                 RecurrencePattern = template.RecurrencePattern,
                 RecurrenceSeriesId = seriesId,
-                Status = "open",
+                Status = Constants.GameStatus.Default,
                 IsPublic = template.IsPublic,
                 CreatedAt = DateTime.UtcNow
             };
-        
-            _context.Games.Add(game);
+
+            context.Games.Add(game);
             games.Add(game);
 
             currentDate = CalculateNextDate(currentDate, template.RecurrencePattern);
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return games;
     }
 
@@ -391,17 +373,17 @@ public class GameService : IGameService
     {
         var now = DateTime.UtcNow;
 
-        var activeSeries = await _context.Games
-            .Where(g => g.IsRecurring && 
-                       g.RecurrenceSeriesId.HasValue && 
-                       g.Status != "cancelled" &&
+        var activeSeries = await context.Games
+            .Where(g => g.IsRecurring &&
+                       g.RecurrenceSeriesId.HasValue &&
+                       g.Status != Constants.GameStatus.Cancelled &&
                        g.StartDateTime > now)
             .GroupBy(g => new { g.RecurrenceSeriesId, g.RecurrencePattern, g.OrganizerId })
             .Select(g => new
             {
                 SeriesId = g.Key.RecurrenceSeriesId!.Value,
                 Pattern = g.Key.RecurrencePattern,
-                OrganizerId = g.Key.OrganizerId,
+                g.Key.OrganizerId,
                 LastUpcomingGame = g.OrderByDescending(game => game.StartDateTime).FirstOrDefault(),
                 UpcomingCount = g.Count()
             })
@@ -410,7 +392,7 @@ public class GameService : IGameService
 
         foreach (var series in activeSeries)
         {
-            var requiredLimit = series.Pattern == "daily" ? 1 : 4;
+            var requiredLimit = series.Pattern == Constants.RecurrencePattern.Daily ? 1 : 4;
 
             if (series.UpcomingCount < requiredLimit)
             {
@@ -418,8 +400,8 @@ public class GameService : IGameService
                 var newStartDateTime = CalculateNextDate(lastDateTime, series.Pattern);
                 var duration = series.LastUpcomingGame.EndDateTime - series.LastUpcomingGame.StartDateTime;
                 var newEndDateTime = newStartDateTime.Add(duration);
-                
-                _logger.LogInformation(
+
+                logger.LogInformation(
                     "Uzupełnianie serii {SeriesId}. Obecnie {Count} nadchodzących gier. Tworzenie nowej na {NewDate}",
                     series.SeriesId, series.UpcomingCount, newStartDateTime);
 
@@ -437,46 +419,39 @@ public class GameService : IGameService
                     IsRecurring = true,
                     RecurrencePattern = series.Pattern,
                     RecurrenceSeriesId = series.SeriesId,
-                    Status = "open",
+                    Status = Constants.GameStatus.Default,
                     IsPublic = series.LastUpcomingGame.IsPublic,
                     CreatedAt = now
                 };
 
-                _context.Games.Add(newGame);
+                context.Games.Add(newGame);
             }
         }
-        
-        await _context.SaveChangesAsync();
+
+        await context.SaveChangesAsync();
     }
-    
+
     public async Task CleanupOldGamesAsync()
     {
         try
         {
-            // var cutoffDate = DateTime.UtcNow.AddDays(-1);
-            //
-            // var oldGames = await _context.Games
-            //     .Where(g => g.EndDateTime < cutoffDate && 
-            //                g.Status != "cancelled" && 
-            //                g.Status != "completed")
-            //     .ToListAsync();
-            var cutoffDate = DateTime.UtcNow.AddMinutes(-2); 
-    
-            var oldGames = await _context.Games
-                .Where(g => g.StartDateTime < cutoffDate &&    
-                            g.Status != "cancelled" && 
-                            g.Status != "completed")
+            var cutoffDate = DateTime.UtcNow.AddMinutes(-2);
+
+            var oldGames = await context.Games
+                .Where(g => g.StartDateTime < cutoffDate &&
+                            g.Status != Constants.GameStatus.Cancelled &&
+                            g.Status != Constants.GameStatus.Completed)
                 .ToListAsync();
 
-            if (!oldGames.Any())
+            if (oldGames.Count == 0)
             {
-                _logger.LogInformation("Brak przeterminowanych gier do wyczyszczenia");
+                logger.LogInformation("Brak przeterminowanych gier do wyczyszczenia");
                 return;
             }
 
-            var gameIds = oldGames.Select(g => g.GameId).ToList();
-            var allParticipants = await _context.GameParticipants
-                .Where(gp => gameIds.Contains(gp.GameId) && gp.Status == "confirmed")
+            var gameIds = oldGames.ConvertAll(g => g.GameId);
+            var allParticipants = await context.GameParticipants
+                .Where(gp => gameIds.Contains(gp.GameId) && gp.Status == Constants.ParticipantStatus.Confirmed)
                 .ToListAsync();
 
             var participantsByGame = allParticipants
@@ -485,30 +460,28 @@ public class GameService : IGameService
 
             foreach (var game in oldGames)
             {
-                var participants = participantsByGame.GetValueOrDefault(game.GameId) ?? new List<GameParticipant>();
-
-                foreach (var participant in participants)
+                foreach (var participant in participantsByGame.GetValueOrDefault(game.GameId) ?? [])
                 {
-                    await _statisticsService.UpdateUserStatisticsAsync(participant.UserId);
+                    await statisticsService.UpdateUserStatisticsAsync(participant.UserId);
                 }
 
-                game.Status = "completed";
-            
+                game.Status = Constants.GameStatus.Completed;
+
                 if (game.IsPaid && game.Cost > 0)
                 {
-                    await _settlementService.GenerateSettlementsForGameAsync(game.GameId);
-                    _logger.LogInformation("Wygenerowano rozliczenia dla gry {GameId}", game.GameId);
+                    await settlementService.GenerateSettlementsForGameAsync(game.GameId);
+                    logger.LogInformation("Wygenerowano rozliczenia dla gry {GameId}", game.GameId);
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             await MaintainRecurringSeriesAsync();
-    
-            _logger.LogInformation("Wyczyszczono {Count} przeterminowanych gier", oldGames.Count);
+
+            logger.LogInformation("Wyczyszczono {Count} przeterminowanych gier", oldGames.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas czyszczenia przeterminowanych gier");
+            logger.LogError(ex, "Błąd podczas czyszczenia przeterminowanych gier");
         }
     }
 }

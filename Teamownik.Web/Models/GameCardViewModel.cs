@@ -1,181 +1,177 @@
-﻿using System;
+﻿using Teamownik.Data.Models;
 
-namespace Teamownik.Web.Models
+namespace Teamownik.Web.Models;
+
+public class GameCardViewModel
 {
-    public class GameCardViewModel
+    public int GameId { get; set; }
+    public string GameName { get; set; } = string.Empty;
+    public string OrganizerName { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+    public DateTime StartDateTime { get; set; }
+    public DateTime EndDateTime { get; set; }
+    public decimal Cost { get; set; }
+    public int CurrentParticipants { get; set; }
+    public int MaxParticipants { get; set; }
+    public int WaitlistCount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public bool IsRecurring { get; set; }
+    public string? RecurrencePattern { get; set; }
+    public bool IsFromUserGroup { get; set; }
+    public bool IsOrganizedByUser { get; set; }
+    public bool IsUserParticipant { get; set; }
+    public string? ParticipantStatus { get; set; }
+    public int? GroupId { get; set; }
+    public string? GroupName { get; set; }
+
+    public int AvailableSpots => MaxParticipants - CurrentParticipants;
+    public bool IsFull => CurrentParticipants >= MaxParticipants;
+    public bool HasWaitlist => WaitlistCount > 0;
+    public bool IsCancelled => Status == Constants.GameStatus.Cancelled;
+
+    public bool IsRegistrationClosed
     {
-        public int GameId { get; set; }
-        public string GameName { get; set; } = string.Empty;
-        public string OrganizerName { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public DateTime StartDateTime { get; set; }
-        public DateTime EndDateTime { get; set; }
-        public decimal Cost { get; set; }
-        public int CurrentParticipants { get; set; }
-        public int MaxParticipants { get; set; }
-        public int WaitlistCount { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public bool IsRecurring { get; set; }
-        public string? RecurrencePattern { get; set; }
-        public bool IsFromUserGroup { get; set; }
-        public bool IsOrganizedByUser { get; set; }
-        public bool IsUserParticipant { get; set; }
-        public string? ParticipantStatus { get; set; }
-        public int? GroupId { get; set; }
-        public string? GroupName { get; set; }
-        
-        public int AvailableSpots => MaxParticipants - CurrentParticipants;
-        public bool IsFull => CurrentParticipants >= MaxParticipants;
-        public bool HasWaitlist => WaitlistCount > 0;
-        public bool IsCancelled => Status == "cancelled";
-        
-        public bool IsRegistrationClosed
+        get
         {
-            get
-            {
-                var timeUntilStart = StartDateTime - DateTime.UtcNow;
-                // return timeUntilStart.TotalMinutes < 30;
-                return timeUntilStart.TotalMinutes < 0;
-            }
+            var timeUntilStart = StartDateTime - System.DateTime.UtcNow;
+            return timeUntilStart.TotalMinutes < Constants.Defaults.RegistrationCloseMinutes;
         }
-        
-        public bool CanJoin => !IsCancelled && !IsUserParticipant && !IsRegistrationClosed;
-        
-        public string BorderColorClass
+    }
+
+    public bool CanJoin => !IsCancelled && !IsUserParticipant && !IsRegistrationClosed;
+
+    public string BorderColorClass
+    {
+        get
         {
-            get
-            {
-                if (Status == "cancelled")
-                    return "border-danger";
-                if (IsRegistrationClosed)
-                    return "border-danger";
-                if (IsFull)
-                    return "border-warning";
-                if (IsOrganizedByUser && CurrentParticipants < MaxParticipants / 3)
-                    return "border-warning";
-                return "border-success";
-            }
+            if (Status == Constants.GameStatus.Cancelled)
+                return Constants.CssClasses.BorderDanger;
+            if (IsRegistrationClosed)
+                return Constants.CssClasses.BorderDanger;
+            if (IsFull)
+                return Constants.CssClasses.BorderWarning;
+            if (IsOrganizedByUser && CurrentParticipants < MaxParticipants / Constants.Defaults.LowParticipantsThresholdDivisor)
+                return Constants.CssClasses.BorderWarning;
+            return Constants.CssClasses.BorderSuccess;
         }
-        
-        public string StatusBadgeClass
+    }
+
+    public string StatusBadgeClass
+    {
+        get
         {
-            get
+            if (IsRegistrationClosed)
+                return Constants.CssClasses.BadgeClosed;
+
+            return Status switch
             {
-                if (IsRegistrationClosed)
-                    return "badge-closed";
-                    
-                return Status switch
+                Constants.GameStatus.Full => Constants.CssClasses.BadgeFull,
+                Constants.GameStatus.Closed => Constants.CssClasses.BadgeClosed,
+                Constants.GameStatus.Cancelled => Constants.CssClasses.BadgeClosed,
+                Constants.GameStatus.Open => Constants.CssClasses.BadgeOpen,
+                _ => Constants.CssClasses.BadgeOpen
+            };
+        }
+    }
+
+    public string StatusBadgeText
+    {
+        get
+        {
+            if (Status == Constants.GameStatus.Cancelled)
+                return Constants.Labels.Cancelled;
+            if (IsRegistrationClosed)
+                return Constants.Labels.RegistrationClosed;
+            if (IsFull)
+                return Constants.Labels.Full;
+            if (Status == Constants.GameStatus.Closed)
+                return Constants.Labels.Closed;
+            if (AvailableSpots > 0)
+                return $"Wolne: {AvailableSpots}";
+            return Constants.Labels.Open;
+        }
+    }
+
+    public bool ShowLowParticipantsWarning
+    {
+        get
+        {
+            if (!IsOrganizedByUser) return false;
+            var threshold = MaxParticipants / Constants.Defaults.LowParticipantsThresholdDivisor;
+            return CurrentParticipants < threshold && Status == Constants.GameStatus.Open;
+        }
+    }
+
+    public string FormattedDateTime
+    {
+        get
+        {
+            var polandZone = TimeZoneInfo.FindSystemTimeZoneById(Constants.DateTime.PolandTimeZoneId);
+            var localStart = TimeZoneInfo.ConvertTimeFromUtc(StartDateTime, polandZone);
+            var localEnd = TimeZoneInfo.ConvertTimeFromUtc(EndDateTime, polandZone);
+
+            if (IsRecurring && !string.IsNullOrEmpty(RecurrencePattern))
+            {
+                var pattern = RecurrencePattern switch
                 {
-                    "full" => "badge-full",
-                    "closed" => "badge-closed",
-                    "cancelled" => "badge-closed",
-                    "open" => "badge-open",
-                    _ => "badge-open"
+                    Constants.RecurrencePattern.Daily => Constants.Labels.Daily,
+                    Constants.RecurrencePattern.Weekly => Constants.Labels.Weekly,
+                    Constants.RecurrencePattern.Biweekly => Constants.Labels.Biweekly,
+                    Constants.RecurrencePattern.Monthly => Constants.Labels.Monthly,
+                    _ => ""
                 };
+                return $"{pattern} • {localStart.ToString(Constants.DateTime.TimeFormat)}-{localEnd.ToString(Constants.DateTime.TimeFormat)}";
             }
+            return $"{localStart.ToString(Constants.DateTime.DateFormat)} • {localStart.ToString(Constants.DateTime.TimeFormat)}-{localEnd.ToString(Constants.DateTime.TimeFormat)}";
         }
-        
-        public string StatusBadgeText
+    }
+
+    public string ParticipantsText
+    {
+        get
         {
-            get
-            {
-                if (Status == "cancelled")
-                    return "Odwołane";
-                if (IsRegistrationClosed)
-                    return "Zapisy zamknięte";
-                if (IsFull)
-                    return "Pełne";
-                if (Status == "closed")
-                    return "Zamknięte";
-                if (AvailableSpots > 0)
-                    return $"Wolne: {AvailableSpots}";
-                return "Otwarte";
-            }
+            var text = $"{CurrentParticipants}/{MaxParticipants} zapisanych";
+            if (WaitlistCount > 0)
+                text += $" (lista rezerwowa: {WaitlistCount})";
+            return text;
         }
-        
-        public bool ShowLowParticipantsWarning
+    }
+
+    public bool IsOnWaitlist => ParticipantStatus == Constants.ParticipantStatus.Reserve;
+
+    public string UserParticipationStatus
+    {
+        get
         {
-            get
-            {
-                if (!IsOrganizedByUser) return false;
-                var threshold = MaxParticipants / 3;
-                return CurrentParticipants < threshold && Status == "open";
-            }
+            if (IsOnWaitlist)
+                return Constants.Labels.OnWaitlist;
+            if (IsUserParticipant)
+                return Constants.Labels.Participating;
+            return "";
         }
-        public string FormattedDateTime
+    }
+
+    public string UserParticipationIcon
+    {
+        get
         {
-            get
-            {
-                var polandZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-                var localStart = TimeZoneInfo.ConvertTimeFromUtc(StartDateTime, polandZone);
-                var localEnd = TimeZoneInfo.ConvertTimeFromUtc(EndDateTime, polandZone);
-                
-                if (IsRecurring && !string.IsNullOrEmpty(RecurrencePattern))
-                {
-                    var pattern = RecurrencePattern switch
-                    {
-                        "daily" => "Codziennie",
-                        "weekly" => "Co tydzień",
-                        "biweekly" => "Co dwa tygodnie",
-                        "monthly" => "Co miesiąc",
-                        _ => ""
-                    };
-                    return $"{pattern} • {localStart:HH:mm}-{localEnd:HH:mm}";
-                }
-                return $"{localStart:dd.MM.yyyy} • {localStart:HH:mm}-{localEnd:HH:mm}";
-            }
+            if (IsOnWaitlist)
+                return Constants.Icons.HourglassSplit;
+            if (IsUserParticipant)
+                return Constants.Icons.CheckCircleFill;
+            return "";
         }
-        
-        public string ParticipantsText
+    }
+
+    public string UserParticipationColor
+    {
+        get
         {
-            get
-            {
-                var text = $"{CurrentParticipants}/{MaxParticipants} zapisanych";
-                if (WaitlistCount > 0)
-                    text += $" (lista rezerwowa: {WaitlistCount})";
-                return text;
-            }
-        }
-        
-        public bool IsOnWaitlist => ParticipantStatus == "reserve";
-        
-        public string UserParticipationStatus 
-        {
-            get
-            {
-                if (IsOnWaitlist)
-                    return "Lista rezerwowa";
-                else if (IsUserParticipant)
-                    return "Uczestniczysz";
-                else
-                    return "";
-            }
-        }
-    
-        public string UserParticipationIcon 
-        {
-            get
-            {
-                if (IsOnWaitlist)
-                    return "bi-hourglass-split";
-                else if (IsUserParticipant)
-                    return "bi-check-circle-fill";
-                else
-                    return "";
-            }
-        }
-    
-        public string UserParticipationColor 
-        {
-            get
-            {
-                if (IsOnWaitlist)
-                    return "#ff9800";
-                else if (IsUserParticipant)
-                    return "#4caf50";
-                else
-                    return "#666"; 
-            }
+            if (IsOnWaitlist)
+                return Constants.Colors.Orange;
+            if (IsUserParticipant)
+                return Constants.Colors.Green;
+            return Constants.Colors.Gray;
         }
     }
 }

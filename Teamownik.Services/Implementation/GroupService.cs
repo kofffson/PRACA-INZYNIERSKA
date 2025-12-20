@@ -57,7 +57,7 @@ public class GroupService : IGroupService
     {
         group.CreatedAt = DateTime.UtcNow;
         group.IsActive = true;
-        
+
         _context.Groups.Add(group);
         await _context.SaveChangesAsync();
 
@@ -80,7 +80,7 @@ public class GroupService : IGroupService
         _context.Groups.Remove(group);
         return await _context.SaveChangesAsync() > 0;
     }
-    
+
     public async Task<bool> DeactivateGroupAsync(int groupId)
     {
         try
@@ -89,7 +89,7 @@ public class GroupService : IGroupService
                 .ExecuteSqlInterpolatedAsync(
                     $"UPDATE \"Groups\" SET \"IsActive\" = false WHERE \"GroupId\" = {groupId}"
                 );
-        
+
             return result > 0;
         }
         catch
@@ -182,13 +182,13 @@ public class GroupService : IGroupService
         var member = await _context.GroupMembers
             .Include(m => m.Group)
             .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
-        
-        if (member == null || member.Group.CreatedBy != currentUserId) 
+
+        if (member == null || member.Group.CreatedBy != currentUserId)
             return false;
-        
+
         member.IsVIP = !member.IsVIP;
         await _context.SaveChangesAsync();
-        
+
         return true;
     }
 }

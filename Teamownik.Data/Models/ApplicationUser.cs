@@ -8,13 +8,11 @@ public class ApplicationUser : IdentityUser
     public string LastName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    
-    public ICollection<GroupMember> GroupMemberships { get; set; } = new List<GroupMember>();
-    public ICollection<Game> OrganizedGames { get; set; } = new List<Game>();
-    public ICollection<GameParticipant> GameParticipations { get; set; } = new List<GameParticipant>();
-    public ICollection<Settlement> PaymentsToMake { get; set; } = new List<Settlement>();
-    public ICollection<Settlement> PaymentsToReceive { get; set; } = new List<Settlement>();
-    public ICollection<GroupMessage> Messages { get; set; } = new List<GroupMessage>();
-    
+    public ICollection<GroupMember> GroupMemberships { get; set; } = [];
+    public ICollection<Game> OrganizedGames { get; set; } = [];
+    public ICollection<GameParticipant> GameParticipations { get; set; } = [];
+    public ICollection<Settlement> PaymentsToMake { get; set; } = [];
+    public ICollection<Settlement> PaymentsToReceive { get; set; } = [];
+    public ICollection<GroupMessage> Messages { get; set; } = [];
     public string FullName => $"{FirstName} {LastName}";
 }

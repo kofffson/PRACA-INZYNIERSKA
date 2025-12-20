@@ -8,7 +8,7 @@ public class Group
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
     public ApplicationUser Creator { get; set; } = null!;
-    public ICollection<GroupMember> Members { get; set; } = new List<GroupMember>();
-    public ICollection<Game> Games { get; set; } = new List<Game>();
-    public ICollection<GroupMessage> Messages { get; set; } = new List<GroupMessage>();
+    public ICollection<GroupMember> Members { get; set; } = [];
+    public ICollection<Game> Games { get; set; } = [];
+    public ICollection<GroupMessage> Messages { get; set; } = [];
 }
