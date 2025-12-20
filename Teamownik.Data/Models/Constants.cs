@@ -41,15 +41,11 @@ public static class Constants
     
     public static class PaymentMethod
     {
-        public const string BankTransfer = "bank_transfer";
         public const string ConfirmedByOrganizer = "confirmed_by_organizer";
     }
     
     public static class Defaults
     {
-        public const int MinParticipants = 2;
-        public const int MaxParticipants = 100;
-        public const int DefaultMessageCount = 50;
         public const int RegistrationCloseMinutes = 0;
         public const int LowParticipantsThresholdDivisor = 3;
     }
@@ -105,7 +101,6 @@ public static class Constants
         public const string PolandTimeZoneId = "Central European Standard Time";
         public const string TimeFormat = "HH:mm";
         public const string DateFormat = "dd.MM.yyyy";
-        public const string DateTimeFormat = "dd.MM.yyyy • HH:mm";
     }
     public static class Shared
     {

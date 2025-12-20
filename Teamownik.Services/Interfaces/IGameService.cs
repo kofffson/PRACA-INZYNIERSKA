@@ -18,16 +18,12 @@ public interface IGameService
     Task<int> GetAvailableSpotsAsync(int gameId);
     Task<int> GetTotalSlotsOccupiedAsync(int gameId);
     Task<bool> UpdateGuestsCountAsync(int gameId, string userId, int newGuestsCount);
-    
     Task<IEnumerable<GameParticipant>> GetWaitlistAsync(int gameId);
     Task<bool> MoveFromWaitlistAsync(int gameId, string userId);
     Task<bool> PromoteFromWaitlistAsync(int gameId);
-    
     Task<bool> UpdateGameStatusAsync(int gameId, string status);
     Task<bool> CancelGameAsync(int gameId, string reason);
-    
     Task<IEnumerable<Game>> CreateRecurringGamesAsync(Game template);
     Task MaintainRecurringSeriesAsync();
-    
     Task CleanupOldGamesAsync();
 }
