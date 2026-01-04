@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teamownik.Data", "Teamownik
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teamownik.Services", "Teamownik.Services\Teamownik.Services.csproj", "{A0988C37-FAB6-40D3-AEB9-A0D05FF6DD18}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teamownik.Test", "Teamownik.Test\Teamownik.Test.csproj", "{9549D304-19E2-4AF1-99ED-4F30B0B5D6CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{A0988C37-FAB6-40D3-AEB9-A0D05FF6DD18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0988C37-FAB6-40D3-AEB9-A0D05FF6DD18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0988C37-FAB6-40D3-AEB9-A0D05FF6DD18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9549D304-19E2-4AF1-99ED-4F30B0B5D6CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9549D304-19E2-4AF1-99ED-4F30B0B5D6CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9549D304-19E2-4AF1-99ED-4F30B0B5D6CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9549D304-19E2-4AF1-99ED-4F30B0B5D6CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

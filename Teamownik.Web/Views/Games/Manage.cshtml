@@ -20,13 +20,12 @@
     var isFull = totalSlotsOccupied >= Model.MaxParticipants;
 
     var timeUntilStart = Model.StartDateTime - DateTime.UtcNow;
-    // var isRegistrationClosed = timeUntilStart.TotalMinutes < 30;
     var isRegistrationClosed = timeUntilStart.TotalMinutes < 0;
     var polandZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
     var localStartDateTime = TimeZoneInfo.ConvertTimeFromUtc(Model.StartDateTime, polandZone);
     var localEndDateTime = TimeZoneInfo.ConvertTimeFromUtc(Model.EndDateTime, polandZone);
-
 }
+
 <!DOCTYPE html>
 <html lang="pl" data-bs-theme="light">
 <head>
@@ -60,213 +59,222 @@
 @await Html.PartialAsync("_Navbar")
 
 <div class="container" style="max-width: 900px;">
-<div class="bg-white p-3 shadow-sm mb-3 rounded-3 position-sticky" style="top: 66px; z-index: 1020;">
-    <div class="d-flex align-items-center gap-3">
-        <a href="/" class="text-decoration-none fs-4 text-dark"><i class="bi bi-arrow-left"></i></a>
-        <div class="fw-bold fs-5 text-dark">Powrót</div>
+    <div class="bg-white p-3 shadow-sm mb-3 rounded-3 position-sticky" style="top: 66px; z-index: 1020;">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/" class="text-decoration-none fs-4 text-dark"><i class="bi bi-arrow-left"></i></a>
+            <div class="fw-bold fs-5 text-dark">Powrót</div>
+        </div>
     </div>
 </div>
-</div>
 
-    <div class="centered-content">
+<div class="centered-content">
 
-        @if (isCurrentUserOrganizer &&
-             !Model.IsPublic &&
-             Model.GroupId != null &&
-             !isFull &&
-             confirmedCount < (Model.MaxParticipants * 0.75))
-        {
-            <div class="mx-3 mb-3">
-                <div class="card border-warning bg-warning bg-opacity-10 shadow-sm rounded-4">
-                    <div class="card-body">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0"
-                                 style="width: 40px; height: 40px;">
-                                <i class="bi bi-lightbulb-fill fs-5"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold text-dark mb-1">Mało chętnych w grupie?</h5>
-                                <p class="small text-muted mb-3">
-                                    Wygląda na to, że brakuje jeszcze graczy.
-                                    Możesz upublicznić to spotkanie, aby osoby spoza grupy mogły dołączyć i uratować mecz!
-                                </p>
+    @if (isCurrentUserOrganizer &&
+         !Model.IsPublic &&
+         Model.GroupId != null &&
+         !isFull &&
+         confirmedCount < (Model.MaxParticipants * 0.75))
+    {
+        <div class="mx-3 mb-3">
+            <div class="card border-warning bg-warning bg-opacity-10 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-lightbulb-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Mało chętnych w grupie?</h5>
+                            <p class="small text-muted mb-3">
+                                Wygląda na to, że brakuje jeszcze graczy.
+                                Możesz upublicznić to spotkanie, aby osoby spoza grupy mogły dołączyć i uratować mecz!
+                            </p>
 
-                                <form method="post" asp-controller="Games" asp-action="MakePublic" asp-route-id="@Model.GameId">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-dark btn-sm rounded-pill fw-bold px-3 shadow-sm">
-                                        <i class="bi bi-globe me-2"></i>Upublicznij spotkanie
-                                    </button>
-                                </form>
-                            </div>
+                            <form method="post" asp-controller="Games" asp-action="MakePublic" asp-route-id="@Model.GameId">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-dark btn-sm rounded-pill fw-bold px-3 shadow-sm">
+                                    <i class="bi bi-globe me-2"></i>Upublicznij spotkanie
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm rounded-4 mx-3 my-3 p-4 border-0 position-relative">
+
+        <span class="badge rounded-pill position-absolute top-0 end-0 mt-3 me-3
+                @if (Model.Status == "cancelled") { <text>bg-danger</text> }
+                else if (isRegistrationClosed) { <text>bg-secondary</text> }
+                else if (isFull) { <text>bg-warning text-dark</text> }
+                else { <text>bg-success</text> }">
+            @if (Model.Status == "cancelled") { <text>Odwołane</text> }
+            else if (isRegistrationClosed) { <text>Zapisy zamknięte</text> }
+            else if (isFull) { <text>Zapełnione</text> }
+            else { <text>Otwarte</text> }
+        </span>
+
+        <h1 class="card-title fs-5 fw-bold mb-3">@Model.GameName</h1>
+
+        <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
+            <i class="bi bi-geo-alt-fill text-info me-1"></i> 
+            <span>@Model.Location</span>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
+            <i class="bi bi-calendar-fill text-info me-1"></i>
+            <span>@localStartDateTime.ToString("dd.MM.yyyy") • @localStartDateTime.ToString("HH:mm")-@localEndDateTime.ToString("HH:mm")</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
+            <i class="bi bi-people-fill text-info me-1"></i> 
+            <span>@totalSlotsOccupied/@Model.MaxParticipants miejsc zajętych @(spotsLeft > 0 ? $"(wolne: {spotsLeft})" : "(pełne)")</span>
+        </div>
+
+        @if (Model.Cost > 0)
+        {
+            <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
+                <i class="bi bi-credit-card-fill text-info me-1"></i>
+                <span>@Model.Cost.ToString("0.00") zł</span>
             </div>
         }
 
-        <div class="card shadow-sm rounded-4 mx-3 my-3 p-4 border-0 position-relative">
-
-    <span class="badge rounded-pill position-absolute top-0 end-0 mt-3 me-3
-            @if (Model.Status == "cancelled") { <text>bg-danger</text> }
-            else if (isRegistrationClosed) { <text>bg-secondary</text> }
-            else if (isFull) { <text>bg-warning text-dark</text> }
-            else { <text>bg-success</text> }">
-        @if (Model.Status == "cancelled") { <text>Odwołane</text> }
-        else if (isRegistrationClosed) { <text>Zapisy zamknięte</text> }
-        else if (isFull) { <text>Zapełnione</text> }
-        else { <text>Otwarte</text> }
-    </span>
-
-    <h1 class="card-title fs-5 fw-bold mb-3">@Model.GameName</h1>
-
-    <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-        <i class="bi bi-geo-alt-fill text-info me-1"></i> 
-        <span>@Model.Location</span>
-    </div>
-    
-    <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-        <i class="bi bi-calendar-fill text-info me-1"></i>
-        <span>@localStartDateTime.ToString("dd.MM.yyyy") • @localStartDateTime.ToString("HH:mm")-@localEndDateTime.ToString("HH:mm")</span>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-        <i class="bi bi-people-fill text-info me-1"></i> 
-        <span>@totalSlotsOccupied/@Model.MaxParticipants miejsc zajętych @(spotsLeft > 0 ? $"(wolne: {spotsLeft})" : "(pełne)")</span>
-    </div>
-
-    @if (Model.Cost > 0)
-    {
-        <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-            <i class="bi bi-credit-card-fill text-info me-1"></i>
-            <span>@Model.Cost.ToString("0.00") zł</span>
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(Model.GroupId?.ToString()))
-    {
-        <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-            <i class="bi bi-shield-fill text-info me-1"></i>
-            <span>Rozgrywka grupowa</span>
-        </div>
-    }
-    else if (Model.IsPublic)
-    {
-        <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
-            <i class="bi bi-globe text-info me-1"></i>
-            <span>Rozgrywka publiczna</span>
-        </div>
-    }
-</div>
-
-        <div class="mx-3">
-            <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                <h2 class="fs-6 fw-bold mb-0">Uczestnicy</h2>
-                <span class="badge bg-light text-secondary fw-normal py-2 px-3 rounded-pill">@confirmedCount osób (@totalSlotsOccupied miejsc)</span>
-            </div>
-
-            @if (confirmedParticipants.Any())
-            {
-                foreach (var participant in confirmedParticipants)
-                {
-                    var initials = participant.User?.FullName != null ? string.Join("", participant.User.FullName.Split(' ').Select(n => n[0]).Take(2)) : "?";
-                    var isOrganizer = participant.UserId == Model.OrganizerId;
-                    var hasGuests = participant.GuestsCount > 0;
-                    var totalSlots = 1 + participant.GuestsCount;
-
-                    <div class="card shadow-sm p-3 rounded-3 mb-2 d-flex flex-row align-items-center justify-content-between border-0">
-                        <div class="d-flex align-items-center gap-3 flex-grow-1">
-                            <div class="position-relative d-flex align-items-center justify-content-center rounded-circle text-white flex-shrink-0"
-                                 style="width: 45px; height: 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                @initials
-                                @if (isOrganizer)
-                                {
-                                    <div class="position-absolute bottom-0 end-0 bg-info border border-2 border-white rounded-circle d-flex align-items-center justify-content-center"
-                                         style="width: 16px; height: 16px; font-size: 10px; margin-bottom: -2px; margin-right: -2px;">
-                                        <i class="bi bi-star-fill"></i>
-                                    </div>
-                                }
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold text-dark mb-0 fs-6">
-                                    @(participant.User?.FullName ?? "Nieznany użytkownik")
-                                    @if (isOrganizer) { <span class="text-info small fw-normal ms-1">(Organizator)</span> }
-                                </div>
-                                <div class="small text-muted">
-                                    @if (hasGuests)
-                                    {
-                                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-semibold me-1" style="font-size: 0.75rem;">
-                                            <i class="bi bi-person-plus-fill me-1"></i>@participant.GuestsCount gość/gości
-                                        </span>
-                                        <span>• Zajmuje @totalSlots miejsc</span>
-                                    }
-                                    else
-                                    {
-                                        <span>1 miejsce</span>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex gap-2">
-                            @if (participant.UserId == currentUserId && !isOrganizer)
-                            {
-                                <button class="btn btn-sm btn-outline-primary rounded-3 small fw-semibold" 
-                                        data-bs-toggle="modal" data-bs-target="#editGuestsModal">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                            }
-                            
-                            @if (!isOrganizer && isCurrentUserOrganizer)
-                            {
-                                <button class="btn btn-sm btn-outline-danger rounded-3 small fw-semibold" 
-                                        onclick="removeParticipant('@participant.UserId', '@participant.User?.FullName')">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="card shadow-sm p-5 rounded-4 text-center text-muted border-0">
-                    <i class="bi bi-people fs-1 text-light-subtle mb-3"></i>
-                    <div class="small">Brak potwierdzonych uczestników</div>
-                </div>
-            }
-        </div>
-
-        @if (reserveParticipants.Any())
+        @if (!string.IsNullOrEmpty(Model.GroupId?.ToString()))
         {
-            <div class="mx-3 my-3">
-                <h2 class="fs-6 fw-bold mb-2 px-1">Lista Rezerwowa (@reserveCount)</h2>
-                @foreach (var participant in reserveParticipants)
-                {
-                    var hasGuests = participant.GuestsCount > 0;
-                    var totalSlots = 1 + participant.GuestsCount;
-                    <div class="card shadow-sm p-3 rounded-3 mb-2 border-0">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <span class="fw-semibold">@(participant.User?.FullName ?? "Nieznany")</span>
+            <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
+                <i class="bi bi-shield-fill text-info me-1"></i>
+                <span>Rozgrywka grupowa</span>
+            </div>
+        }
+        else if (Model.IsPublic)
+        {
+            <div class="d-flex align-items-center gap-2 py-1 text-secondary small">
+                <i class="bi bi-globe text-info me-1"></i>
+                <span>Rozgrywka publiczna</span>
+            </div>
+        }
+        
+        @if (isCurrentUserOrganizer && Model.IsPaid && Model.Cost > 0)
+        {
+            <div class="mt-3 pt-3 border-top">
+                <a href="/Settlements/GameSettlements?gameId=@Model.GameId" class="btn btn-outline-success w-100 rounded-3">
+                    <i class="bi bi-cash-stack me-2"></i>Zarządzaj rozliczeniami
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="mx-3">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+            <h2 class="fs-6 fw-bold mb-0">Uczestnicy</h2>
+            <span class="badge bg-light text-secondary fw-normal py-2 px-3 rounded-pill">@confirmedCount osób (@totalSlotsOccupied miejsc)</span>
+        </div>
+
+        @if (confirmedParticipants.Any())
+        {
+            foreach (var participant in confirmedParticipants)
+            {
+                var initials = participant.User?.FullName != null ? string.Join("", participant.User.FullName.Split(' ').Select(n => n[0]).Take(2)) : "?";
+                var isOrganizer = participant.UserId == Model.OrganizerId;
+                var hasGuests = participant.GuestsCount > 0;
+                var totalSlots = 1 + participant.GuestsCount;
+
+                <div class="card shadow-sm p-3 rounded-3 mb-2 d-flex flex-row align-items-center justify-content-between border-0">
+                    <div class="d-flex align-items-center gap-3 flex-grow-1">
+                        <div class="position-relative d-flex align-items-center justify-content-center rounded-circle text-white flex-shrink-0"
+                             style="width: 45px; height: 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            @initials
+                            @if (isOrganizer)
+                            {
+                                <div class="position-absolute bottom-0 end-0 bg-info border border-2 border-white rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width: 16px; height: 16px; font-size: 10px; margin-bottom: -2px; margin-right: -2px;">
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold text-dark mb-0 fs-6">
+                                @(participant.User?.FullName ?? "Nieznany użytkownik")
+                                @if (isOrganizer) { <span class="text-info small fw-normal ms-1">(Organizator)</span> }
+                            </div>
+                            <div class="small text-muted">
                                 @if (hasGuests)
                                 {
-                                    <span class="guests-badge ms-2">
-                                        +@participant.GuestsCount gość/gości
+                                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-semibold me-1" style="font-size: 0.75rem;">
+                                        <i class="bi bi-person-plus-fill me-1"></i>@participant.GuestsCount gość/gości
                                     </span>
-                                    <span class="small text-muted ms-1">(@totalSlots miejsc)</span>
+                                    <span>• Zajmuje @totalSlots miejsc</span>
+                                }
+                                else
+                                {
+                                    <span>1 miejsce</span>
                                 }
                             </div>
-                            <span class="badge bg-info-subtle text-primary rounded-pill">#@participant.WaitlistPosition</span>
                         </div>
                     </div>
-                }
+                    
+                    <div class="d-flex gap-2">
+                        @if (participant.UserId == currentUserId && !isOrganizer)
+                        {
+                            <button class="btn btn-sm btn-outline-primary rounded-3 small fw-semibold" 
+                                    data-bs-toggle="modal" data-bs-target="#editGuestsModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        }
+                        
+                        @if (!isOrganizer && isCurrentUserOrganizer)
+                        {
+                            <button class="btn btn-sm btn-outline-danger rounded-3 small fw-semibold" 
+                                    onclick="removeParticipant('@participant.UserId', '@participant.User?.FullName')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card shadow-sm p-5 rounded-4 text-center text-muted border-0">
+                <i class="bi bi-people fs-1 text-light-subtle mb-3"></i>
+                <div class="small">Brak potwierdzonych uczestników</div>
             </div>
         }
-
     </div>
 
-    @if (isUserParticipant && userParticipant != null && !isCurrentUserOrganizer)
+    @if (reserveParticipants.Any())
     {
+        <div class="mx-3 my-3">
+            <h2 class="fs-6 fw-bold mb-2 px-1">Lista Rezerwowa (@reserveCount)</h2>
+            @foreach (var participant in reserveParticipants)
+            {
+                var hasGuests = participant.GuestsCount > 0;
+                var totalSlots = 1 + participant.GuestsCount;
+                <div class="card shadow-sm p-3 rounded-3 mb-2 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="fw-semibold">@(participant.User?.FullName ?? "Nieznany")</span>
+                            @if (hasGuests)
+                            {
+                                <span class="guests-badge ms-2">
+                                    +@participant.GuestsCount gość/gości
+                                </span>
+                                <span class="small text-muted ms-1">(@totalSlots miejsc)</span>
+                            }
+                        </div>
+                        <span class="badge bg-info-subtle text-primary rounded-pill">#@participant.WaitlistPosition</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@if (isUserParticipant && userParticipant != null && !isCurrentUserOrganizer)
+{
     <div class="modal fade" id="editGuestsModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 p-3">
@@ -301,57 +309,57 @@
             </div>
         </div>
     </div>
-    }
+}
 
-    <div class="bg-white p-3 shadow fixed-bottom">
-        <div class="centered-content d-flex gap-2">
-            @if (isCurrentUserOrganizer)
+<div class="bg-white p-3 shadow fixed-bottom">
+    <div class="centered-content d-flex gap-2">
+        @if (isCurrentUserOrganizer)
+        {
+            <a href="/Games/Edit/@Model.GameId" class="btn btn-info btn-lg fw-bold rounded-3 flex-fill text-white">
+                <i class="bi bi-pencil me-2"></i> Edytuj
+            </a>
+            <button class="btn btn-light text-secondary btn-lg fw-bold rounded-3 flex-fill" onclick="showDeleteModal()">
+                <i class="bi bi-trash me-2"></i> Usuń
+            </button>
+        }
+        else
+        {
+            @if (Model.Status == "cancelled")
             {
-                <a href="/Games/Edit/@Model.GameId" class="btn btn-info btn-lg fw-bold rounded-3 flex-fill text-white">
-                    <i class="bi bi-pencil me-2"></i> Edytuj
-                </a>
-                <button class="btn btn-light text-secondary btn-lg fw-bold rounded-3 flex-fill" onclick="showDeleteModal()">
-                    <i class="bi bi-trash me-2"></i> Usuń
+                <button class="btn btn-secondary btn-lg fw-bold rounded-3 w-100" disabled>
+                    <i class="bi bi-x-circle me-2"></i> Rozgrywka odwołana
                 </button>
+            }
+            else if (isRegistrationClosed && !isUserParticipant)
+            {
+                <button class="btn btn-secondary btn-lg fw-bold rounded-3 w-100" disabled>
+                    <i class="bi bi-clock-history me-2"></i> Zapisy zakończone
+                </button>
+            }
+            else if (isUserParticipant)
+            {
+                <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@Model.GameId" class="w-100">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn @(participantStatus == "reserve" ? "btn-outline-danger" : "btn-danger") btn-lg fw-bold rounded-3 w-100">
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        @(participantStatus == "reserve" ? "Zrezygnuj z rezerwy" : "Wypisz się")
+                    </button>
+                </form>
             }
             else
             {
-                @if (Model.Status == "cancelled")
-                {
-                    <button class="btn btn-secondary btn-lg fw-bold rounded-3 w-100" disabled>
-                        <i class="bi bi-x-circle me-2"></i> Rozgrywka odwołana
-                    </button>
-                }
-                else if (isRegistrationClosed && !isUserParticipant)
-                {
-                    <button class="btn btn-secondary btn-lg fw-bold rounded-3 w-100" disabled>
-                        <i class="bi bi-clock-history me-2"></i> Zapisy zakończone
-                    </button>
-                }
-                else if (isUserParticipant)
-                {
-                    <form method="post" asp-controller="Games" asp-action="Leave" asp-route-id="@Model.GameId" class="w-100">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn @(participantStatus == "reserve" ? "btn-outline-danger" : "btn-danger") btn-lg fw-bold rounded-3 w-100">
-                            <i class="bi bi-x-circle-fill me-2"></i>
-                            @(participantStatus == "reserve" ? "Zrezygnuj z rezerwy" : "Wypisz się")
-                        </button>
-                    </form>
-                }
-                else
-                {
-                    <button type="button" class="btn @(isFull ? "btn-outline-primary" : "btn-success") btn-lg fw-bold rounded-3 w-100"
-                            data-bs-toggle="modal" data-bs-target="#joinModal">
-                        <i class="bi bi-@(isFull ? "hourglass-split" : "plus-circle-fill") me-2"></i>
-                        @(isFull ? "Dołącz do listy rezerwowej" : "Zapisz się")
-                    </button>
-                }
+                <button type="button" class="btn @(isFull ? "btn-outline-primary" : "btn-success") btn-lg fw-bold rounded-3 w-100"
+                        data-bs-toggle="modal" data-bs-target="#joinModal">
+                    <i class="bi bi-@(isFull ? "hourglass-split" : "plus-circle-fill") me-2"></i>
+                    @(isFull ? "Dołącz do listy rezerwowej" : "Zapisz się")
+                </button>
             }
-        </div>
+        }
     </div>
+</div>
 
-    @if (!isUserParticipant && !isCurrentUserOrganizer && Model.Status != "cancelled" && !isRegistrationClosed)
-    {
+@if (!isUserParticipant && !isCurrentUserOrganizer && Model.Status != "cancelled" && !isRegistrationClosed)
+{
     <div class="modal fade" id="joinModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 p-3">
@@ -387,50 +395,50 @@
             </div>
         </div>
     </div>
-    }
+}
 
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 p-3">
-                <div class="modal-header border-0 pb-0">
-                    <h3 class="modal-title fs-5 fw-bold">Usuń rozgrywkę</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body pt-2 pb-4">
-                    <p class="text-secondary small" id="removeParticipantText"></p>
-                    <form method="post" asp-controller="Games" asp-action="Delete" asp-route-id="@Model.GameId">
-                        @Html.AntiForgeryToken()
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-light text-secondary fw-bold flex-fill" data-bs-dismiss="modal">Anuluj</button>
-                            <button type="submit" class="btn btn-danger fw-bold flex-fill">Usuń</button>
-                        </div>
-                    </form>
-                </div>
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 p-3">
+            <div class="modal-header border-0 pb-0">
+                <h3 class="modal-title fs-5 fw-bold">Usuń rozgrywkę</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2 pb-4">
+                <p class="text-secondary small" id="removeParticipantText"></p>
+                <form method="post" asp-controller="Games" asp-action="Delete" asp-route-id="@Model.GameId">
+                    @Html.AntiForgeryToken()
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light text-secondary fw-bold flex-fill" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-danger fw-bold flex-fill">Usuń</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="removeParticipantModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 p-3">
-                <div class="modal-header border-0 pb-0">
-                    <h3 class="modal-title fs-5 fw-bold">Usuń uczestnika</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body pt-2 pb-4">
-                    <p class="text-secondary small" id="removeParticipantText"></p>
-                    <form method="post" asp-controller="Games" asp-action="RemoveParticipant" asp-route-id="@Model.GameId" id="removeParticipantForm">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="userId" id="removeUserId" />
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-light text-secondary fw-bold flex-fill" data-bs-dismiss="modal">Anuluj</button>
-                            <button type="submit" class="btn btn-danger fw-bold flex-fill">Usuń</button>
-                        </div>
-                    </form>
-                </div>
+<div class="modal fade" id="removeParticipantModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 p-3">
+            <div class="modal-header border-0 pb-0">
+                <h3 class="modal-title fs-5 fw-bold">Usuń uczestnika</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2 pb-4">
+                <p class="text-secondary small" id="removeParticipantText"></p>
+                <form method="post" asp-controller="Games" asp-action="RemoveParticipant" asp-route-id="@Model.GameId" id="removeParticipantForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="participantUserId" id="removeUserId" />
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light text-secondary fw-bold flex-fill" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-danger fw-bold flex-fill">Usuń</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 70px;">
     @if (TempData["Success"] != null)
@@ -473,34 +481,34 @@
     }
 </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        const removeParticipantModal = new bootstrap.Modal(document.getElementById('removeParticipantModal'));
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const removeParticipantModal = new bootstrap.Modal(document.getElementById('removeParticipantModal'));
 
-        function showDeleteModal() {
-            deleteModal.show();
-        }
+    function showDeleteModal() {
+        deleteModal.show();
+    }
 
-        function removeParticipant(userId, userName) {
-            document.getElementById('removeUserId').value = userId;
-            document.getElementById('removeParticipantText').textContent =
-                `Czy na pewno chcesz usunąć uczestnika "${userName}" z tej rozgrywki?`;
-            removeParticipantModal.show();
-        }
+    function removeParticipant(userId, userName) {
+        document.getElementById('removeUserId').value = userId;
+        document.getElementById('removeParticipantText').textContent =
+            `Czy na pewno chcesz usunąć uczestnika "${userName}" z tej rozgrywki?`;
+        removeParticipantModal.show();
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-            var toastList = toastElList.map(function(toastEl) {
-                return new bootstrap.Toast(toastEl, {
-                    autohide: true,
-                    delay: 6000
-                });
-            });
-            toastList.forEach(function(toast) {
-                toast.show();
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 6000
             });
         });
-    </script>
+        toastList.forEach(function(toast) {
+            toast.show();
+        });
+    });
+</script>
 </body>
 </html>

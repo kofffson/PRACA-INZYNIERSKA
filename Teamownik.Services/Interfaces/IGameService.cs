@@ -10,10 +10,15 @@ public interface IGameService
     Task<IEnumerable<Game>> GetGamesByParticipantAsync(string userId);
     Task<IEnumerable<Game>> GetGamesByGroupAsync(int groupId);
     Task<Game> CreateGameAsync(Game game);
+    
     Task<bool> UpdateGameAsync(Game game);
     Task<bool> DeleteGameAsync(int gameId);
     Task<bool> JoinGameAsync(int gameId, string userId, int guestsCount = 0);
+    Task<bool> AddParticipantByOrganizerAsync(int gameId, string organizerId, string targetUserId);
+    
     Task<bool> LeaveGameAsync(int gameId, string userId);
+    Task<(bool Success, string? ErrorMessage)> LeaveGameWithValidationAsync(int gameId, string userId);
+    
     Task<bool> IsUserParticipantAsync(int gameId, string userId);
     Task<int> GetAvailableSpotsAsync(int gameId);
     Task<int> GetTotalSlotsOccupiedAsync(int gameId);

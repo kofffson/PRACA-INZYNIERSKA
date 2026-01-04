@@ -64,7 +64,7 @@ public class SettlementService(TeamownikDbContext context, ILogger<SettlementSer
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas generowania rozliczeń dla gry {GameId}", gameId);
+            logger.LogError(ex, "Error generating settlements for game {GameId}", gameId);
             return [];
         }
     }
@@ -85,7 +85,7 @@ public class SettlementService(TeamownikDbContext context, ILogger<SettlementSer
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas regeneracji rozliczeń dla gry {GameId}", gameId);
+            logger.LogError(ex, "Error regenerating settlements for game {GameId}", gameId);
             return false;
         }
     }
@@ -108,11 +108,11 @@ public class SettlementService(TeamownikDbContext context, ILogger<SettlementSer
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas oznaczania płatności jako opłaconej {SettlementId}", settlementId);
+            logger.LogError(ex, "Error marking settlement as paid {SettlementId}", settlementId);
             return false;
         }
     }
-
+    
     public async Task<bool> MarkAsPaidByOrganizerAsync(int settlementId, string organizerId)
     {
         try
@@ -135,7 +135,38 @@ public class SettlementService(TeamownikDbContext context, ILogger<SettlementSer
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas potwierdzania płatności przez organizatora {SettlementId}", settlementId);
+            logger.LogError(ex, "Error confirming payment by organizer {SettlementId}", settlementId);
+            return false;
+        }
+    }
+    
+    public async Task<bool> UndoPaymentConfirmationAsync(int settlementId, string organizerId)
+    {
+        try
+        {
+            var settlement = await context.Settlements
+                .Include(s => s.Game)
+                .FirstOrDefaultAsync(s => s.SettlementId == settlementId);
+
+            if (settlement == null || settlement.Game.OrganizerId != organizerId)
+                return false;
+
+            if (!settlement.IsPaid)
+                return false;
+
+            // ZMIANA: Przywrócenie stanu nieopłaconego
+            settlement.IsPaid = false;
+            settlement.PaidAt = null;
+            settlement.Status = Constants.SettlementStatus.Pending;
+            settlement.PaymentMethod = null;
+            settlement.Notes = $"Cofnięto potwierdzenie w dniu {DateTime.UtcNow:dd.MM.yyyy HH:mm}";
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error undoing payment confirmation {SettlementId}", settlementId);
             return false;
         }
     }
@@ -155,7 +186,7 @@ public class SettlementService(TeamownikDbContext context, ILogger<SettlementSer
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas anulowania rozliczenia {SettlementId}", settlementId);
+            logger.LogError(ex, "Error cancelling settlement {SettlementId}", settlementId);
             return false;
         }
     }
@@ -299,6 +330,36 @@ public class SettlementService(TeamownikDbContext context, ILogger<SettlementSer
                 DueDate = s.DueDate
             })
         };
+    }
+    
+    public async Task<int> MarkAllAsPaidAsync(int gameId, string organizerId)
+    {
+        try
+        {
+            var game = await context.Games.FindAsync(gameId);
+            if (game == null || game.OrganizerId != organizerId)
+                return 0;
+
+            var unpaidSettlements = await context.Settlements
+                .Where(s => s.GameId == gameId && !s.IsPaid)
+                .ToListAsync();
+
+            foreach (var settlement in unpaidSettlements)
+            {
+                settlement.IsPaid = true;
+                settlement.PaidAt = DateTime.UtcNow;
+                settlement.Status = Constants.SettlementStatus.Paid;
+                settlement.PaymentMethod = Constants.PaymentMethod.ConfirmedByOrganizer;
+            }
+
+            await context.SaveChangesAsync();
+            return unpaidSettlements.Count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error marking all payments as paid for game {GameId}", gameId);
+            return 0;
+        }
     }
 
     public async Task SendPaymentRemindersAsync()

@@ -101,7 +101,7 @@ public class SettlementsController : Controller
 
         return View(model);
     }
-
+    
     [HttpGet]
     public async Task<IActionResult> GameSettlements(int gameId)
     {
@@ -173,7 +173,7 @@ public class SettlementsController : Controller
 
         return RedirectToAction(nameof(MyPayments));
     }
-
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmPaymentByOrganizer(int settlementId, int gameId)
@@ -193,8 +193,47 @@ public class SettlementsController : Controller
 
         return RedirectToAction(nameof(GameSettlements), new { gameId });
     }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UndoPaymentConfirmation(int settlementId, int gameId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        var result = await _settlementService.UndoPaymentConfirmationAsync(settlementId, userId);
+        
+        if (result)
+        {
+            TempData["Success"] = "Cofnięto potwierdzenie płatności.";
+        }
+        else
+        {
+            TempData["Error"] = "Nie udało się cofnąć potwierdzenia.";
+        }
 
-    // POST: /Settlements/SendReminder/5
+        return RedirectToAction(nameof(GameSettlements), new { gameId });
+    }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmAllPayments(int gameId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        var count = await _settlementService.MarkAllAsPaidAsync(gameId, userId);
+        
+        if (count > 0)
+        {
+            TempData["Success"] = $"Potwierdzono {count} płatności.";
+        }
+        else
+        {
+            TempData["Warning"] = "Brak płatności do potwierdzenia.";
+        }
+
+        return RedirectToAction(nameof(GameSettlements), new { gameId });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendReminder(int id)

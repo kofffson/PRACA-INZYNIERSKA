@@ -63,7 +63,7 @@ public class GameService(
             .OrderBy(g => g.StartDateTime)
             .ToListAsync();
     }
-
+    
     public async Task<Game> CreateGameAsync(Game game)
     {
         try
@@ -74,7 +74,23 @@ public class GameService(
             context.Games.Add(game);
             await context.SaveChangesAsync();
 
-            logger.LogInformation("Game created successfully with ID: {GameId}", game.GameId);
+            var organizerParticipant = new GameParticipant
+            {
+                GameId = game.GameId,
+                UserId = game.OrganizerId,
+                GuestsCount = 0,
+                Status = Constants.ParticipantStatus.Confirmed,
+                JoinedAt = DateTime.UtcNow,
+                ConfirmedAt = DateTime.UtcNow,
+                WaitlistPosition = null
+            };
+
+            context.GameParticipants.Add(organizerParticipant);
+            await context.SaveChangesAsync();
+
+            logger.LogInformation("Game created with ID: {GameId}, organizer auto-enrolled: {OrganizerId}", 
+                game.GameId, game.OrganizerId);
+            
             return game;
         }
         catch (Exception ex)
@@ -98,7 +114,38 @@ public class GameService(
         context.Games.Remove(game);
         return await context.SaveChangesAsync() > 0;
     }
+    
+    public async Task<(bool Success, string? ErrorMessage)> LeaveGameWithValidationAsync(int gameId, string userId)
+    {
+        var game = await context.Games
+            .Include(g => g.Participants)
+            .FirstOrDefaultAsync(g => g.GameId == gameId);
 
+        if (game == null)
+            return (false, "Nie znaleziono spotkania.");
+
+        if (game.OrganizerId == userId)
+            return (false, "Organizator nie może wypisać się ze swojego spotkania. Możesz je odwołać lub usunąć.");
+
+        var participant = game.Participants.FirstOrDefault(p => p.UserId == userId);
+        if (participant == null)
+            return (false, "Nie jesteś zapisany na to spotkanie.");
+
+        var wasConfirmed = participant.Status == Constants.ParticipantStatus.Confirmed;
+
+        context.GameParticipants.Remove(participant);
+        await context.SaveChangesAsync();
+
+        await statisticsService.UpdateUserStatisticsAsync(userId);
+
+        if (wasConfirmed)
+        {
+            await PromoteFromWaitlistAsync(gameId);
+        }
+
+        return (true, null);
+    }
+    
     public async Task<bool> JoinGameAsync(int gameId, string userId, int guestsCount = 0)
     {
         var game = await context.Games
@@ -111,8 +158,8 @@ public class GameService(
         if (timeUntilStart.TotalMinutes < Constants.Defaults.RegistrationCloseMinutes)
         {
             logger.LogWarning(
-                "Próba zapisu na spotkanie {GameId} za mniej niż {Minutes} minut przed startem. Pozostało: {RemainingMinutes:F1} minut",
-                gameId, Constants.Defaults.RegistrationCloseMinutes, timeUntilStart.TotalMinutes);
+                "Attempt to join game {GameId} less than {Minutes} minutes before start",
+                gameId, Constants.Defaults.RegistrationCloseMinutes);
             return false;
         }
 
@@ -159,6 +206,12 @@ public class GameService(
         await statisticsService.UpdateUserStatisticsAsync(userId);
 
         return true;
+    }
+    
+    public Task<bool> AddParticipantByOrganizerAsync(int gameId, string organizerId, string targetUserId)
+    {
+        logger.LogWarning("Attempt to use deprecated AddParticipantByOrganizerAsync method");
+        return Task.FromResult(false);
     }
 
     public async Task<bool> LeaveGameAsync(int gameId, string userId)
@@ -401,10 +454,6 @@ public class GameService(
                 var duration = series.LastUpcomingGame.EndDateTime - series.LastUpcomingGame.StartDateTime;
                 var newEndDateTime = newStartDateTime.Add(duration);
 
-                logger.LogInformation(
-                    "Uzupełnianie serii {SeriesId}. Obecnie {Count} nadchodzących gier. Tworzenie nowej na {NewDate}",
-                    series.SeriesId, series.UpcomingCount, newStartDateTime);
-
                 var newGame = new Game
                 {
                     GameName = series.LastUpcomingGame.GameName,
@@ -445,7 +494,7 @@ public class GameService(
 
             if (oldGames.Count == 0)
             {
-                logger.LogInformation("Brak przeterminowanych gier do wyczyszczenia");
+                logger.LogInformation("No expired games to cleanup");
                 return;
             }
 
@@ -470,18 +519,17 @@ public class GameService(
                 if (game.IsPaid && game.Cost > 0)
                 {
                     await settlementService.GenerateSettlementsForGameAsync(game.GameId);
-                    logger.LogInformation("Wygenerowano rozliczenia dla gry {GameId}", game.GameId);
                 }
             }
 
             await context.SaveChangesAsync();
             await MaintainRecurringSeriesAsync();
 
-            logger.LogInformation("Wyczyszczono {Count} przeterminowanych gier", oldGames.Count);
+            logger.LogInformation("Cleaned up {Count} expired games", oldGames.Count);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas czyszczenia przeterminowanych gier");
+            logger.LogError(ex, "Error during game cleanup");
         }
     }
 }

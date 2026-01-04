@@ -8,7 +8,15 @@ public interface ISettlementService
     Task<bool> RegenerateSettlementsForGameAsync(int gameId);
     
     Task<bool> MarkAsPaidAsync(int settlementId, string paymentMethod, string? paymentReference = null);
+    
+    // ============================================================
+    // WYMAGANIE 4: METODY POTWIERDZANIA PŁATNOŚCI
+    // ZMIANA: Dodane metody do zarządzania polem IsPaid przez organizatora
+    // ============================================================
     Task<bool> MarkAsPaidByOrganizerAsync(int settlementId, string organizerId);
+    Task<bool> UndoPaymentConfirmationAsync(int settlementId, string organizerId);
+    Task<int> MarkAllAsPaidAsync(int gameId, string organizerId);
+    
     Task<bool> CancelSettlementAsync(int settlementId, string reason);
     
     Task<IEnumerable<Settlement>> GetUserPaymentsAsync(string userId, bool onlyUnpaid = false);

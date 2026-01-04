@@ -25,7 +25,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas ładowania gier");
+            logger.LogError(ex, "Error loading games");
             TempData["Error"] = "Wystąpił błąd podczas ładowania spotkań";
             return RedirectToAction("Index", "Home");
         }
@@ -46,12 +46,12 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas ładowania formularza tworzenia gry");
+            logger.LogError(ex, "Error loading create form");
             TempData["Error"] = "Wystąpił błąd podczas ładowania formularza";
             return RedirectToAction("Index", "Home");
         }
     }
-
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateGameViewModel model)
@@ -96,12 +96,8 @@ public class GamesController(
             }
             else
             {
+                // ZMIANA: CreateGameAsync automatycznie dodaje organizatora jako uczestnika
                 createdGames = [await gameService.CreateGameAsync(game)];
-            }
-
-            foreach (var createdGame in createdGames)
-            {
-                await gameService.JoinGameAsync(createdGame.GameId, userId, 0);
             }
 
             var firstGame = createdGames.First();
@@ -113,7 +109,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas tworzenia gry");
+            logger.LogError(ex, "Error creating game");
             ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia spotkania.");
 
             var userId = GetUserId();
@@ -171,7 +167,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas ładowania formularza edycji");
+            logger.LogError(ex, "Error loading edit form");
             TempData["Error"] = "Wystąpił błąd podczas ładowania formularza edycji";
             return RedirectToAction("Index", "Home");
         }
@@ -235,7 +231,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas aktualizacji gry");
+            logger.LogError(ex, "Error updating game");
             TempData["Error"] = "Wystąpił błąd podczas aktualizacji spotkania";
 
             var userId = GetUserId();
@@ -247,7 +243,7 @@ public class GamesController(
             return View(model);
         }
     }
-
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Join(int id, int guestsCount = 0)
@@ -272,7 +268,7 @@ public class GamesController(
 
             if ((game.StartDateTime - DateTime.UtcNow).TotalMinutes < Constants.Defaults.RegistrationCloseMinutes)
             {
-                TempData["Error"] = "Zapisy są zamknięte. Zapisy zamykają się pół godziny przed rozpoczęciem spotkania.";
+                TempData["Error"] = "Zapisy są zamknięte.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -284,6 +280,7 @@ public class GamesController(
 
             var availableSpots = await gameService.GetAvailableSpotsAsync(id);
             var totalSlotsNeeded = 1 + guestsCount;
+
             var result = await gameService.JoinGameAsync(id, userId, guestsCount);
 
             if (result)
@@ -302,10 +299,18 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas zapisywania na grę");
+            logger.LogError(ex, "Error joining game");
             TempData["Error"] = "Wystąpił błąd podczas zapisywania na spotkanie";
             return RedirectToAction("Index", "Home");
         }
+    }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult AddParticipant(int id, string targetUserId)
+    {
+        TempData["Error"] = "Funkcjonalność dodawania uczestników przez organizatora została wyłączona.";
+        return RedirectToAction(nameof(Manage), new { id });
     }
 
     [HttpPost]
@@ -332,12 +337,12 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas aktualizacji gości");
+            logger.LogError(ex, "Error updating guests");
             TempData["Error"] = "Wystąpił błąd podczas aktualizacji";
             return RedirectToAction(nameof(Manage), new { id });
         }
     }
-
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Leave(int id)
@@ -346,6 +351,19 @@ public class GamesController(
         {
             var userId = GetUserId();
             if (userId == null) return RedirectToLogin();
+
+            var game = await gameService.GetGameByIdAsync(id);
+            if (game == null)
+            {
+                TempData["Error"] = "Nie znaleziono spotkania.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (game.OrganizerId == userId)
+            {
+                TempData["Error"] = "Organizator nie może wypisać się ze swojego spotkania. Możesz je odwołać lub usunąć.";
+                return RedirectToAction(nameof(Manage), new { id });
+            }
 
             var result = await gameService.LeaveGameAsync(id, userId);
             TempData[result ? "Success" : "Error"] = result
@@ -356,7 +374,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas wypisywania z gry");
+            logger.LogError(ex, "Error leaving game");
             TempData["Error"] = "Wystąpił błąd podczas wypisywania ze spotkania";
             return RedirectToAction("Index", "Home");
         }
@@ -373,7 +391,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas ładowania strony zarządzania");
+            logger.LogError(ex, "Error loading manage page");
             TempData["Error"] = "Wystąpił błąd podczas ładowania strony zarządzania";
             return RedirectToAction("Index", "Home");
         }
@@ -400,7 +418,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas odwoływania gry");
+            logger.LogError(ex, "Error cancelling game");
             TempData["Error"] = "Wystąpił błąd podczas odwoływania spotkania";
             return RedirectToAction(nameof(Index));
         }
@@ -427,7 +445,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas usuwania gry");
+            logger.LogError(ex, "Error deleting game");
             TempData["Error"] = "Wystąpił błąd podczas usuwania spotkania";
             return RedirectToAction(nameof(Index));
         }
@@ -460,7 +478,7 @@ public class GamesController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas usuwania uczestnika");
+            logger.LogError(ex, "Error removing participant");
             TempData["Error"] = "Wystąpił błąd podczas usuwania uczestnika";
             return RedirectToAction(nameof(Index));
         }
@@ -481,12 +499,12 @@ public class GamesController(
             game.IsPublic = true;
             await gameService.UpdateGameAsync(game);
 
-            TempData["Success"] = "Spotkanie zostało upublicznione! Teraz widzą je wszyscy.";
+            TempData["Success"] = "Spotkanie zostało upublicznione!";
             return RedirectToAction(nameof(Manage), new { id });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Błąd podczas upubliczniania gry");
+            logger.LogError(ex, "Error making game public");
             TempData["Error"] = "Wystąpił błąd podczas zmiany statusu.";
             return RedirectToAction(nameof(Manage), new { id });
         }
